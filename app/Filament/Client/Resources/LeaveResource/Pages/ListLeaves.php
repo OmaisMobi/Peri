@@ -38,7 +38,7 @@ class ListLeaves extends ListRecords
                     return $query->where('user_id', $user->id);
                 });
 
-            $tabs[] = Tab::make('Assigned Employees')
+            $tabs[] = Tab::make('Team Leaves')
                 ->icon('heroicon-m-user-group')
                 ->extraAttributes(['data-cy' => 'assigned-tab'])
                 ->modifyQueryUsing(function ($query) use ($user) {

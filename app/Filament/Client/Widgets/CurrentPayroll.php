@@ -4,7 +4,8 @@ namespace App\Filament\Client\Widgets;
 
 use Filament\Widgets\Widget;
 use Filament\Facades\Filament;
-use Illuminate\Support\Carbon;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class CurrentPayroll extends Widget
@@ -17,6 +18,29 @@ class CurrentPayroll extends Widget
         return [
             'default' => 12,
         ];
+    }
+
+    public static function canView(): bool
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return false;
+        }
+
+        $hasAdminRole = $user->hasRole('Admin');
+        $hasPayrollRole = $user->hasRole('Payroll Manager');
+        $hasPayrollPermission = $user->can('payroll.create');
+
+        if (
+            $hasAdminRole ||
+            $hasPayrollRole ||
+            $hasPayrollPermission
+        ) {
+            return true;
+        }
+
+        return false;
     }
 
     public function getViewData(): array

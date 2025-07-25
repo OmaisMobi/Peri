@@ -3,8 +3,6 @@
 namespace App\Filament\Client\Widgets;
 
 use App\Facades\Helper;
-use App\Models\Holiday;
-use App\Models\Role;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -37,10 +35,10 @@ class MonthWidget extends BaseWidget
 
         if (
             $hasAdminRole ||
-            $hasPayrollRole ||
-            $hasPayrollPermission &&
-            $hasAssignedUsers ||
-            $attendanceConfigDisabled
+            $hasPayrollRole &&
+            $hasPayrollPermission ||
+            $attendanceConfigDisabled ||
+            $hasAssignedUsers
         ) {
             return false;
         }

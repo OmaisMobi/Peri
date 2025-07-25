@@ -74,7 +74,7 @@ class AttendanceTableWidget extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-            ->heading('Attendance Table')
+            ->heading('Attendance')
             ->emptyStateHeading('No employees yet')
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label('ID')->grow(false)->width('10%'),
@@ -143,8 +143,8 @@ class AttendanceTableWidget extends BaseWidget
             ])
             ->searchPlaceholder('Search Employee')
             ->query(fn() => $this->getTableQuery())
-            ->paginated([5, 10, 25, 50])
-            ->defaultPaginationPageOption(5)
+            ->paginated(Helper::isAssignUsers() ? [2, 5, 10, 25, 50] : [5, 10, 25, 50])
+            ->defaultPaginationPageOption(Helper::isAssignUsers() ? 2 : 5)
             ->recordUrl(fn($record) => url('/client/' . Filament::getTenant()->slug . '/attendance?highlight_user=' . $record->id))
             ->recordClasses('cursor-pointer');
     }
