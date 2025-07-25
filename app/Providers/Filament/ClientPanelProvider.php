@@ -63,7 +63,7 @@ class ClientPanelProvider extends PanelProvider
             ->brandLogo(asset('storage/' . $settings['main_logo']))
             ->darkModeBrandLogo(asset('storage/' . $settings['dark_logo']))
             ->brandLogoHeight('3rem')
-            ->sidebarFullyCollapsibleOnDesktop()
+            ->sidebarCollapsibleOnDesktop()
             ->breadcrumbs(false)
             ->login(Login::class)
             ->registration(Registration::class)

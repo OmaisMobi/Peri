@@ -66,6 +66,10 @@ body {
     @apply ring-2 ring-primary-50 dark:!ring-gray-950 border border-primary-100 dark:border-gray-900 shadow-none;
 }
 
+.fi-section:is(.dark *) {
+    @apply !border-white;
+}
+
 .fi-fo-tabs {
     @apply ring-2 ring-primary-50 dark:!ring-gray-950 border border-primary-100 dark:border-gray-900 shadow-none;
 }

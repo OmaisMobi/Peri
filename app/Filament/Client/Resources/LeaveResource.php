@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use Illuminate\Validation\ValidationException;
 use Filament\Forms\Get;
+use Illuminate\Support\Str;
 use Guava\FilamentKnowledgeBase\Contracts\HasKnowledgeBase;
 use Guava\FilamentKnowledgeBase\Facades\KnowledgeBase;
 
@@ -1085,11 +1086,10 @@ class LeaveResource extends Resource implements HasKnowledgeBase
                 Tables\Columns\TextColumn::make('type')
                     ->label('Period')
                     ->badge()
-                    ->formatStateUsing(fn(string $state): string => match ($state) {
-                        'regular' => 'Regular',
-                        'short_leave' => 'Short Leave',
-                        'half_day' => 'Half Day',
-                    })
+                    ->formatStateUsing(
+                        fn(string $state): string =>
+                        Str::of($state)->replace('_', ' ')->title()
+                    )
                     ->color('info'),
                 Tables\Columns\TextColumn::make('leave_type')
                     ->label('Type')
@@ -1167,7 +1167,10 @@ class LeaveResource extends Resource implements HasKnowledgeBase
                 Tables\Columns\TextColumn::make('leave_reason')
                     ->limit(40),
                 Tables\Columns\TextColumn::make('status')
-                    ->description(fn(Leave $record): string => $record->rejection_reason ?? '')
+                    ->description(
+                        fn(Leave $record): string =>
+                        Str::words($record->rejection_reason ?? '', 5, '...')
+                    )
                     ->formatStateUsing(function ($state, $record) {
                         $latestLog = $record->leaveLogs()->latest('created_at')->first();
 
