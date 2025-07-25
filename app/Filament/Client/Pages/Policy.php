@@ -37,7 +37,7 @@ class Policy extends Page implements HasKnowledgeBase
             return false;
         }
 
-        return $user->hasRole('Admin') || $user->can('attendancePolicies.view') || $user->can('attendancePolicies.manage');
+        return $user->hasRole('Admin');
     }
 
     public static function getDocumentation(): array

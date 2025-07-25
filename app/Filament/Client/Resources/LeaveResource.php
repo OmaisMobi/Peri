@@ -37,8 +37,8 @@ class LeaveResource extends Resource implements HasKnowledgeBase
 
     public static function shouldRegisterNavigation(): bool
     {
-        $user = auth()->user();
-        return $user->hasRole('Admin') || $user->attendance_config == 1;
+        $user = Auth::user();
+        return $user->hasRole('Admin') || $user->attendance_config == 1 || $user->hasRole('CEO') || $user->hasRole('AMS Manager');
     }
 
     // LeaveResource.php

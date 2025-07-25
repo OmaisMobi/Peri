@@ -129,21 +129,21 @@ class ShiftResource extends Resource implements HasKnowledgeBase
     // Permissions for CRUD operations
     public static function canViewAny(): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->can('shifts.view') || Auth::user()->can('shifts.manage'));
+        return Auth::check() && (Auth::user()->hasRole('Admin'));
     }
 
     public static function canCreate(): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->can('shifts.manage'));
+        return Auth::check() && (Auth::user()->hasRole('Admin'));
     }
 
     public static function canEdit($record): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->can('shifts.manage'));
+        return Auth::check() && (Auth::user()->hasRole('Admin'));
     }
 
     public static function canDelete($record): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->can('shifts.manage'));
+        return Auth::check() && (Auth::user()->hasRole('Admin'));
     }
 }

@@ -543,21 +543,21 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
     // Authorization Methods
     public static function canViewAny(): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin', 'web') || Auth::user()->can('employees.view')  || Auth::user()->can('employees.manage'));
+        return Auth::check() && (Auth::user()->hasRole('Admin', 'web') || Auth::user()->can('employees.view')  || Auth::user()->can('employees.manage') || Auth::user()->hasRole('CEO') || Auth::user()->hasRole('Payroll Manager') || Auth::user()->hasRole('AMS Manager'));
     }
 
     public static function canCreate(): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin', 'web') || Auth::user()->can('employees.manage'));
+        return Auth::check() && (Auth::user()->hasRole('Admin', 'web') || Auth::user()->can('employees.manage') || Auth::user()->hasRole('CEO') || Auth::user()->hasRole('Payroll Manager') || Auth::user()->hasRole('AMS Manager'));
     }
 
     public static function canEdit($record): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin', 'web') || Auth::user()->can('employees.manage'));
+        return Auth::check() && (Auth::user()->hasRole('Admin', 'web') || Auth::user()->can('employees.manage') || Auth::user()->hasRole('CEO') || Auth::user()->hasRole('Payroll Manager') || Auth::user()->hasRole('AMS Manager'));
     }
 
     public static function canDelete($record): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin', 'web') || Auth::user()->can('employees.manage'));
+        return Auth::check() && (Auth::user()->hasRole('Admin', 'web') || Auth::user()->can('employees.manage') || Auth::user()->hasRole('CEO') || Auth::user()->hasRole('Payroll Manager') || Auth::user()->hasRole('AMS Manager'));
     }
 }

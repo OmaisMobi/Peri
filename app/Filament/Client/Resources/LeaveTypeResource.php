@@ -28,7 +28,7 @@ class LeaveTypeResource extends Resource implements HasKnowledgeBase
     public static function shouldRegisterNavigation(): bool
     {
         $user = Auth::user();
-        return $user->hasRole('Admin') || $user->attendance_config == 1;
+        return $user->hasRole('Admin') || $user->attendance_config == 1 || $user->hasRole('CEO') || $user->hasRole('AMS Manager');
     }
     public static function getNavigationBadge(): ?string
     {
@@ -135,14 +135,13 @@ class LeaveTypeResource extends Resource implements HasKnowledgeBase
 
     public static function canViewAny(): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->can('leaveType.view') || Auth::user()->can('leaveType.manage'));
+        return Auth::check() && (Auth::user()->hasRole('Admin'));
     }
 
     public static function canCreate(): bool
     {
         return Auth::check() && (
-            Auth::user()->hasRole('Admin') ||
-            Auth::user()->can('leaveType.manage')
+            Auth::user()->hasRole('Admin')
         );
     }
 }

@@ -20,6 +20,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Icetalker\FilamentTableRepeater\Forms\Components\TableRepeater;
 use App\Services\PayrollCalculationService;
+use Illuminate\Support\Facades\Auth;
 
 class FundsResource extends Resource
 {
@@ -203,5 +204,24 @@ class FundsResource extends Resource
             'create' => Pages\CreateFunds::route('/create'),
             'edit' => Pages\EditFunds::route('/{record}/edit'),
         ];
+    }
+    public static function canViewAny(): bool
+    {
+        return Auth::check() && (Auth::user()->hasRole('Admin'));
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::check() && (Auth::user()->hasRole('Admin'));
+    }
+
+    public static function canEdit($record): bool
+    {
+        return Auth::check() && (Auth::user()->hasRole('Admin'));
+    }
+
+    public static function canDelete($record): bool
+    {
+        return Auth::check() && (Auth::user()->hasRole('Admin'));
     }
 }

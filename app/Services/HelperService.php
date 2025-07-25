@@ -900,7 +900,8 @@ class HelperService
      */
     public function checkShortLeave($user, $date, $start, $end, $diff)
     {
-        $leave = Leave::where('user_id', $user->id)
+        $leave = Filament::getTenant()->leaves()
+            ->where('user_id', $user->id)
             ->where('type', 'short_leave')
             ->where('status', 'approved')
             ->whereDate('starting_date', '<=', $date->toDateString())
@@ -910,7 +911,6 @@ class HelperService
                     ->where(DB::raw('TIME_FORMAT(ending_time, "%H:%i")'), '>=', $end->format('H:i'));
             })
             ->first();
-
         return $leave ? 0 : $diff;
     }
 
@@ -924,7 +924,8 @@ class HelperService
      */
     public function checkShortLeaveFirstTime($fingers, $user, $date)
     {
-        return Leave::where('user_id', $user->id)
+        return Filament::getTenant()->leaves()
+            ->where('user_id', $user->id)
             ->where('type', 'short_leave')
             ->where('status', 'approved')
             ->whereDate('starting_date', '<=', $date->toDateString())
