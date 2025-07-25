@@ -30,7 +30,7 @@ class ListLeaves extends ListRecords
         $user = Auth::user();
 
 
-        if (Helper::isAssignUsers()) {
+        if (Helper::isAssignUsers() && (!$user->hasRole('Admin') && !$user->hasRole('CEO') && !$user->hasRole('AMS Manager'))) {
             $tabs[] = Tab::make('My Leaves')
                 ->icon('heroicon-m-user')
                 ->extraAttributes(['data-cy' => 'my-leaves-tab'])

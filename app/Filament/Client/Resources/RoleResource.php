@@ -181,21 +181,21 @@ class RoleResource extends Resource implements HasKnowledgeBase
 
     public static function canViewAny(): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->can('roles.view') || Auth::user()->can('roles.manage'));
+        return Auth::check() && (Auth::user()->hasRole('Admin'));
     }
 
     public static function canCreate(): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->can('roles.manage'));
+        return Auth::check() && (Auth::user()->hasRole('Admin'));
     }
 
     public static function canEdit($record): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->can('roles.manage'));
+        return Auth::check() && (Auth::user()->hasRole('Admin'));
     }
 
     public static function canDelete($record): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->can('roles.manage'));
+        return Auth::check() && (Auth::user()->hasRole('Admin'));
     }
 }

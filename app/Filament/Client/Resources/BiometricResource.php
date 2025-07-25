@@ -35,7 +35,7 @@ class BiometricResource extends Resource implements HasKnowledgeBase
     public static function shouldRegisterNavigation(): bool
     {
         $user = Auth::user();
-        return $user->hasRole('Admin') || $user->attendance_config == 1;
+        return $user->hasRole('Admin') || $user->attendance_config == 1 || $user->hasRole('CEO') || $user->hasRole('AMS Manager');
     }
 
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder

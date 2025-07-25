@@ -66,7 +66,7 @@ class DepartmentResource extends Resource implements HasKnowledgeBase
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->visible(fn() => Auth::user()->hasRole('Admin') || Auth::user()->can('departments.manage')),
+                        ->visible(fn() => Auth::user()->hasRole('Admin')),
                 ]),
             ]);
     }
@@ -83,21 +83,21 @@ class DepartmentResource extends Resource implements HasKnowledgeBase
     // Permissions for CRUD operations
     public static function canViewAny(): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->can('departments.view') || Auth::user()->can('departments.manage'));
+        return Auth::check() && (Auth::user()->hasRole('Admin'));
     }
 
     public static function canCreate(): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->can('departments.manage'));
+        return Auth::check() && (Auth::user()->hasRole('Admin'));
     }
 
     public static function canEdit($record): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->can('departments.manage'));
+        return Auth::check() && (Auth::user()->hasRole('Admin'));
     }
 
     public static function canDelete($record): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->can('departments.manage'));
+        return Auth::check() && (Auth::user()->hasRole('Admin'));
     }
 }

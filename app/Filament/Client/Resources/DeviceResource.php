@@ -103,21 +103,21 @@ class DeviceResource extends Resource implements HasKnowledgeBase
 
     public static function canViewAny(): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->can('device.view') || Auth::user()->can('device.manage'));
+        return Auth::check() && (Auth::user()->hasRole('Admin'));
     }
 
     public static function canCreate(): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->can('device.manage'));
+        return Auth::check() && (Auth::user()->hasRole('Admin'));
     }
 
     public static function canEdit($record): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->can('device.manage'));
+        return Auth::check() && (Auth::user()->hasRole('Admin'));
     }
 
     public static function canDelete($record): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->can('device.manage'));
+        return Auth::check() && (Auth::user()->hasRole('Admin'));
     }
 }
