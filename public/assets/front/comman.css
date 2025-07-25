@@ -1,0 +1,20 @@
+#cookie-bar .cookie-bar-btn,
+#cookie-bar .cookie-bar-btn:after { -webkit-transition: all .5s ease-in-out; -moz-transition: all .5s ease-in-out; -ms-transition: all .5s ease-in-out; -o-transition: all .5s ease-in-out; transition: all .5s ease-in-out; }
+#cookie-bar { display: none; position: fixed; bottom: 19px; left: 19px; z-index: 9999; overflow: hidden; width: 300px; min-height: 20px; padding: 14px 0; background: #404040; text-align: center; border-radius: 4px; }
+#cookie-bar * { margin: 0; outline: 0; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }
+#cookie-bar .cookie-bar-body { width: 90%; margin: 0 auto; }
+#cookie-bar a[href^=tel] { color: inherit; }
+#cookie-bar a:focus,
+#cookie-bar button:focus { outline: unset; outline: none; }
+#cookie-bar p { font-size: 18px; line-height: 1.4; color: #fff; font-weight: 400; }
+#cookie-bar .cookie-bar-action { padding-top: 10px; }
+#cookie-bar .cookie-bar-btn:hover,
+#cookie-bar .cookie-bar-btn:focus { text-decoration: none; }
+#cookie-bar .cookie-bar-btn:after { position: absolute; top: 0; right: 52%; bottom: 0; left: 52%; z-index: -1; border-bottom: 4px solid #14428d; background: rgba(20, 66, 141, .3); content: ''; }
+#cookie-bar .cookie-bar-btn:hover:after,
+#cookie-bar .cookie-bar-btn:focus:after { right: 0; left: 0; }
+@media only screen and (max-width: 767px) {
+#cookie-bar { padding: 15px 0; }
+#cookie-bar .cookie-bar-body { width: 96%; }
+#cookie-bar p { font-size: 16px; }
+}

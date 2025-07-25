@@ -1,0 +1,379 @@
+@import "../../../../vendor/filament/filament/resources/css/theme.css";
+
+@config 'tailwind.config.js';
+
+body {
+    @apply !bg-primary-50 dark:!bg-gray-950;
+}
+
+.fi-header .fi-header-heading {
+    @apply !font-semibold;
+}
+
+.fi-sidebar {
+    @apply p-4 !important;
+}
+
+.fi-sidebar-header {
+    @apply bg-transparent ring-0 shadow-none !important;
+}
+
+.fi-sidebar-item-active a {
+    @apply bg-primary-600 dark:bg-primary-950/70 hover:bg-primary-600 dark:hover:bg-primary-950/70 text-white dark:text-white;
+}
+
+.fi-sidebar-item-active .fi-sidebar-item-label {
+    @apply text-white dark:text-white;
+}
+
+.fi-sidebar-item-active .fi-sidebar-item-grouped-border {
+    visibility: hidden !important;
+}
+
+.fi-sidebar-item-active svg {
+    @apply text-white dark:text-white;
+}
+
+.fi-sidebar-item:not(.fi-sidebar-item-active) a {
+    @apply dark:text-gray-400 hover:bg-primary-100 dark:hover:bg-primary-800/50 dark:hover:text-white;
+}
+
+.fi-sidebar-item:not(.fi-sidebar-item-active):hover a svg {
+    @apply dark:text-white;
+}
+
+.fi-main-ctn {
+    @apply !h-screen;
+}
+
+.fi-topbar {
+    @apply relative;
+}
+
+.fi-topbar nav {
+    @apply bg-primary-50 dark:bg-gray-950 ring-0 shadow-none;
+}
+
+.fi-main {
+    @apply bg-white dark:bg-gray-800 ltr:rounded-tl-3xl rtl:rounded-tr-3xl shadow !max-w-full !overflow-y-auto flex-grow;
+}
+
+.fi-wi-stats-overview-stat {
+    @apply shadow-none ring-2 ring-primary-50 dark:!ring-gray-950 border border-primary-100 dark:border-gray-900;
+}
+
+.fi-section {
+    @apply ring-2 ring-primary-50 dark:!ring-gray-950 border border-primary-100 dark:border-gray-900 shadow-none;
+}
+
+.fi-fo-tabs {
+    @apply ring-2 ring-primary-50 dark:!ring-gray-950 border border-primary-100 dark:border-gray-900 shadow-none;
+}
+
+.fi-ta-ctn {
+    @apply ring-2 ring-primary-50 dark:!ring-gray-950 border border-primary-100 dark:border-gray-900 shadow-none;
+}
+
+.fi-ta-header-ctn {
+    @apply bg-primary-600;
+}
+
+.fi-wi-widget,
+.fi-wi-chart,
+.fi-wi-widget dl,
+.fi-wi-widget .fi-fo-component-ctn {
+    @apply !h-full;
+}
+
+.fi-dashboard-page .fi-header,
+.fi-dashboard-page .fi-wi-widget.fi-wi-table {
+    @apply !hidden;
+}
+
+.fi-dashboard-page .fi-ta-header {
+    @apply !block !bg-primary-600;
+}
+
+.fi-dashboard-page .fi-ta-header .fi-ta-header-heading {
+    @apply !text-white dark:text-white;
+}
+
+.fi-dashboard-page section.py-8 {
+    @apply !py-4;
+}
+
+.fi-dashboard-page .fi-section-content {
+    @apply !p-0;
+}
+
+.fi-dashboard-page .fi-section-header h3,
+.fi-dashboard-page .fi-ta-header h3 {
+    @apply !text-lg;
+}
+
+.fi-section-header {
+    @apply !bg-primary-500 text-white dark:text-white;
+    border-radius: 10px 10px 0px 0px;
+}
+
+.fi-section-header-heading {
+    @apply text-white dark:text-white;
+}
+
+.fi-dashboard-page .fi-ta-ctn {
+    border-radius: 0px !important;
+}
+
+.fi-dashboard-page .fi-ta-header-ctn {
+    @apply bg-white dark:bg-white/5;
+}
+
+.fi-dashboard-page .flex.items-center.gap-x-4 {
+    @apply !justify-between !bg-primary-600;
+}
+
+.fi-ta-search {
+    @apply !mr-auto ml-0;
+}
+
+.fi-body {
+    @apply !overflow-y-hidden;
+}
+
+.fi-wi-stats-overview-stat-value {
+    @apply !text-center !font-semibold p-7;
+}
+
+.fi-wi-stats-overview-stat-value {
+    font-size: 2.6rem;
+}
+
+.fi-wi-stats-overview-stat-description {
+    font-size: 1.2rem !important;
+    font-weight: 500 !important;
+}
+
+.stat-late.fi-wi-stats-overview-stat {
+    @apply !bg-yellow-400;
+}
+
+.flex.-ml-\[50px\] {
+    display: block !important;
+}
+
+.-ml-\[50px\] {
+    margin-left: 0px !important;
+    text-align: center !important;
+}
+
+.fi-page.fi-dashboard-page .md\:grid-cols-3 {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+}
+
+@media screen and (max-width: 768px) {
+    .fi-page.fi-dashboard-page .md\:grid-cols-3 {
+        grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+    }
+}
+
+.custom-width {
+    width: 10rem;
+}
+
+.fi-ta-header-toolbar .fi-icon-btn-badge-ctn {
+    display: none !important;
+}
+
+.fi-ta-header-toolbar {
+    display: block !important;
+}
+
+.fi-ta-filter-indicators .whitespace-nowrap {
+    display: none !important;
+}
+
+.it-table-repeater-cell-label {
+    font-weight: 600 !important;
+    @apply !px-3 !py-5;
+}
+
+.it-table-repeater-cell {
+    @apply !px-3;
+}
+
+.fi-resource-roles .fi-section-header-description {
+    @apply !text-white;
+}
+
+.fi-resource-payroll-records .fi-ta-header-toolbar {
+    display: none !important;
+}
+
+.fi-resource-payroll-records .flex.items-center.justify-between {
+    display: none !important;
+}
+
+.fi-resource-payroll-records .fi-ta-group-header {
+    @apply !px-6 !gap-x-1;
+}
+
+.fi-resource-tax-slabs .fi-icon-btn svg {
+    transform: rotate(180deg) !important;
+}
+
+.fi-page.fi-resource-list-records-page.fi-resource-funds .fi-icon-btn svg {
+    transform: rotate(180deg) !important;
+}
+
+.fi-resource-edit-record-page .fi-ta-header-heading {
+    display: none !important;
+}
+
+.fi-resource-edit-record-page .fi-ta-header {
+    display: none !important;
+}
+
+.fi-resource-edit-record-page.fi-resource-plans .fi-ta-header {
+    display: block !important;
+}
+
+.fi-resource-edit-record-page.fi-resource-plans .fi-ta-header .fi-btn {
+    @apply bg-green-600 hover:bg-green-500;
+}
+
+.fi-resource-edit-record-page.fi-resource-supports .fi-ta-header {
+    display: block !important;
+}
+
+.fi-resource-edit-record-page.fi-resource-supports .fi-ta-header .fi-btn {
+    @apply bg-green-600 hover:bg-green-500;
+}
+
+.fi-page .fi-ta-header-heading {
+    color: white !important;
+}
+
+/* Ensure full height and width for layout containers */
+.billing-container {
+    height: 100vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    border-top: 1px solid var(--tw-border-color) !important;
+}
+
+@media (min-width: 768px) {
+    .billing-container {
+        flex-direction: row !important;
+        justify-content: space-between !important;
+    }
+}
+
+/* Sidebar */
+.billing-sidebar {
+    padding: 3rem 1.5rem !important;
+    color: white !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+    width: 100% !important;
+    max-height: 100vh !important;
+}
+
+@media (min-width: 768px) {
+    .billing-sidebar {
+        width: 25% !important;
+    }
+}
+@media (min-width: 1024px) {
+    .billing-sidebar {
+        width: 20% !important;
+    }
+}
+
+/* Main content area */
+.billing-main {
+    background-color: #17345c !important; /* bg-gray-100 */
+    color: #111827 !important;
+    flex-grow: 1 !important;
+    width: 100% !important;
+    overflow-y: auto !important;
+    padding: 1rem !important;
+    border-top-left-radius: 1.5rem;
+}
+
+.dark .billing-main {
+    background-color: #1f2937 !important; /* dark:bg-gray-800 */
+    color: #f9fafb !important;
+}
+
+/* Force section width to fit */
+.billing-plan-section {
+    width: 100% !important;
+    height: auto !important;
+    border-radius: 0.5rem !important;
+    border: 1px solid #e5e7eb !important;
+    background-color: white !important;
+}
+
+.dark .billing-plan-section {
+    background-color: #0f172a !important;
+    border-color: #374151 !important;
+}
+
+/* Fix mobile top nav spacing */
+#topNavReturnLink {
+    margin-top: 0 !important;
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+}
+.logo {
+    background-color: #17345c;
+    border-radius: 0.5rem;
+    padding: 0.3rem 0.5rem;
+}
+.logo:hover {
+    transition: all 0.1s ease-in;
+    background-color: #20457a;
+}
+.logo-back {
+    border: 1px solid rgb(184, 184, 184);
+    border-radius: 0.5rem;
+}
+.logo-back:hover {
+    transition: all 0.1s ease-in;
+    background-color: #c0c0c0;
+}
+.logo-back span {
+    color: #09090b;
+}
+.logo-back span:hover {
+    transition: all 0.1s ease-in;
+    background-color: #c0c0c0;
+}
+
+.warning-notice {
+    @apply flex items-start gap-2 p-4 mt-4 rounded-md;
+    background-color: theme("colors.amber.100") !important;
+    border: 1px solid theme("colors.amber.300") !important;
+}
+
+.dark .warning-notice {
+    background-color: theme("colors.amber.900") !important;
+    border-color: theme("colors.amber.700") !important;
+}
+
+.warning-icon {
+    @apply w-5 h-5 mt-0.5;
+    color: theme("colors.amber.600") !important;
+}
+
+.dark .warning-icon {
+    color: theme("colors.amber.300") !important;
+}
+
+.warning-text {
+    @apply text-sm font-medium;
+    color: theme("colors.amber.800") !important;
+}
+
+.dark .warning-text {
+    color: theme("colors.amber.200") !important;
+}

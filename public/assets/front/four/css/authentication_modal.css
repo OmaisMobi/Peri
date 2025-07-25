@@ -1,0 +1,308 @@
+#authenticationModal .modal-dialog {
+  color: black;
+  max-width: 900px !important;
+  max-height: 500px !important;
+}
+
+#authenticationModal .modal-dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  pointer-events: auto;
+  background-clip: padding-box;
+  outline: 0;
+}
+#authenticationModal .modal-dialog-centered {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  object-fit: cover;
+}
+
+#authenticationModal .wrapper {
+  overflow: hidden;
+  padding: 0px 30px;
+  height: 100%;
+}
+#authenticationModal .wrapper .form-container {
+  display: flex;
+  align-items: center;
+}
+
+#authenticationModal .wrapper .title-text {
+  display: flex;
+}
+
+#authenticationModal .wrapper .title {
+  width: 50%;
+  font-size: 35px;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+#authenticationModal .wrapper .slide-controls {
+  position: relative;
+  display: flex;
+  width: 70%;
+  height: 45px;
+  overflow: hidden;
+  margin: 30px 0 10px 0;
+  justify-content: space-between;
+  border-radius: 15px;
+  background-color: #e1e1e1;
+}
+
+#authenticationModal .form-container {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+#authenticationModal .slide-controls .slide {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  z-index: 1;
+}
+
+#authenticationModal button[type="submit"] {
+  background-color: var(--tp-theme-primary);
+  outline: none;
+  border: 0px;
+}
+#authenticationModal .slide-controls label.signup {
+  color: #000;
+}
+
+#authenticationModal .slide-controls .slider-tab {
+  position: absolute;
+  height: 100%;
+  width: 50%;
+  left: 0;
+  z-index: 0;
+  border-radius: 20px;
+  background: var(--tp-theme-primary);
+  transition: all 0.3s linear;
+}
+
+#authenticationModal input[type="radio"] {
+  display: none;
+}
+
+#authenticationModal #signup:checked ~ .slider-tab {
+  left: 50%;
+}
+
+#authenticationModal #signup:checked ~ label.signup {
+  color: #fff;
+  cursor: default;
+  user-select: none;
+}
+
+#authenticationModal #signup:checked ~ label.login {
+  color: #000;
+}
+
+#authenticationModal #authenticationModalLogin:checked ~ label.signup {
+  color: #000;
+}
+
+#authenticationModal #authenticationModalLogin:checked ~ label.login {
+  cursor: default;
+  user-select: none;
+}
+
+#authenticationModal .wrapper .form-container {
+  width: 100%;
+  overflow: hidden;
+}
+
+#authenticationModal .form-container .form-inner {
+  display: flex;
+  width: 200%;
+}
+
+#authenticationModal .form-container .login,
+#authenticationModal .form-container .signup {
+  width: 100%;
+  /* height: 100%; */
+}
+
+#authenticationModal .authentication-modal-single-side-content {
+  padding: 20px 20px;
+  display: flex; 
+  max-height: 550px;
+  align-items: stretch;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+#authenticationModal .authentication-modal-single-side-content form * {
+  z-index: 10;
+}
+
+#authenticationModal .authentication-modal-single-side-content form#authenticationModalLogin {
+  height: 390px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+#authenticationModal .authentication-modal-single-side-content form#register {
+  height: 520px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+#authenticationModal .form-container .form-inner form {
+  width: 50%;
+  transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+#authenticationModal .form-inner form .field {
+  height: 50px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+#authenticationModal .form-inner form .field input {
+  height: 100%;
+  width: 100%;
+  outline: none;
+  padding-left: 7px;
+  border-radius: 15px;
+  border-bottom-width: 2px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+#authenticationModal .form-inner form .field input:focus {
+  border-color: #1a75ff;
+}
+
+#authenticationModal .form-inner form .field input::placeholder {
+  color: #999;
+  transition: all 0.3s ease;
+}
+
+#authenticationModal form .field input:focus::placeholder {
+  color: #1a75ff;
+}
+
+#authenticationModal .form-inner form .pass-link {
+  margin-top: 5px;
+}
+
+#authenticationModal .form-inner form .signup-link {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.form-inner form .pass-link a,
+#authenticationModal .form-inner form .signup-link a {
+  color: #1a75ff;
+  text-decoration: none;
+}
+
+.form-inner form .pass-link a:hover,
+#authenticationModal .form-inner form .signup-link a:hover {
+  text-decoration: underline;
+}
+
+#authenticationModal form .btn {
+  height: 50px;
+  width: 100%;
+  border-radius: 15px;
+  position: relative;
+  overflow: hidden;
+}
+
+#authenticationModal form .btn .btn-layer {
+  height: 100%;
+  width: 300%;
+  position: absolute;
+  left: -100%;
+  background: -webkit-linear-gradient(
+    right,
+    #003366,
+    #004080,
+    #0059b3,
+    #0073e6
+  );
+  border-radius: 15px;
+  transition: all 0.4s ease;
+}
+
+#authenticationModal form .btn:hover .btn-layer {
+  left: 0;
+}
+
+#authenticationModal form .btn input[type="submit"] {
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+  position: relative;
+  background: none;
+  border: none;
+  color: #fff;
+  padding-left: 0;
+  border-radius: 15px;
+  font-size: 20px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.modal-body-login,
+#authenticationModal .modal-body-signup {
+  display: none;
+}
+
+.auth-modal-imgae {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.auth-modal-imgae img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  overflow: hidden;
+}
+
+#authenticationModal form input {
+  padding: 10px 15px;
+  line-height: 1;
+}
+
+@media (min-height: 768px) {
+  #authenticationModal .form-container .login,
+  #authenticationModal .form-container .signup {
+    height: 100%;
+  }
+}
+
+@media (max-height: 767px) {
+  #authenticationModal .login-form {
+    height: 400px !important;
+  }
+}
+
+/* modal based css ends here  */
+/* modal based css ends here  */
+/* modal based css ends here  */
+/* modal based css ends here  */
+/* modal based css ends here  */
