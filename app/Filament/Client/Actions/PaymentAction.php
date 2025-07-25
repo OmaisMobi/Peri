@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Actions;
+namespace App\Filament\Client\Actions;
 
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
