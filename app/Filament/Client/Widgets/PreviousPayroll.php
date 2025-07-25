@@ -5,6 +5,7 @@ namespace App\Filament\Client\Widgets;
 use Filament\Widgets\Widget;
 use Filament\Facades\Filament;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Reactive;
@@ -15,6 +16,33 @@ class PreviousPayroll extends Widget
     protected static ?int $sort = 7;
 
     public ?string $selectedMonth = null;
+
+    public function getColumnSpan(): int|string|array
+    {
+        return ['default' => 12];
+    }
+    public static function canView(): bool
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return false;
+        }
+
+        $hasAdminRole = $user->hasRole('Admin');
+        $hasPayrollRole = $user->hasRole('Payroll Manager');
+        $hasPayrollPermission = $user->can('payroll.create');
+
+        if (
+            $hasAdminRole ||
+            $hasPayrollRole ||
+            $hasPayrollPermission
+        ) {
+            return true;
+        }
+
+        return false;
+    }
 
     #[Computed]
     public function availableMonths(): array
@@ -33,10 +61,6 @@ class PreviousPayroll extends Widget
         return $months;
     }
 
-    public function getColumnSpan(): int|string|array
-    {
-        return ['default' => 12];
-    }
 
     #[Computed]
     public function getViewData(): array
@@ -93,7 +117,10 @@ class PreviousPayroll extends Widget
             }
         }
 
-        $totalActiveEmployees = Filament::getTenant()->users()->where('active', 1)->count();
+        $offCyclePayrolls = Filament::getTenant()->OffCyclePayroll()
+            ->whereMonth('created_at', $month)
+            ->whereYear('created_at', $year)
+            ->count();
 
         return [
             'hasData' => $hasData,
@@ -102,7 +129,7 @@ class PreviousPayroll extends Widget
             'employeeCount' => $employeeCount,
             'totalTax' => $totalTax,
             'fundsBreakdown' => $fundsBreakdown,
-            'totalActiveEmployees' => $totalActiveEmployees,
+            'offCyclePayrolls' => $offCyclePayrolls,
             'payRunMonthYear' => $payRunMonthYear,
             'currencySymbol' => $currencySymbol,
             'selectedMonth' => $this->selectedMonth,
