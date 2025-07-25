@@ -5,7 +5,7 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\OffCyclePayroll;
 
-class ViewPayslip extends Component
+class ViewOffcyclePayslip extends Component
 {
     public OffCyclePayroll $payroll;
 
