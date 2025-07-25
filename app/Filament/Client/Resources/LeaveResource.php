@@ -587,6 +587,7 @@ class LeaveResource extends Resource implements HasKnowledgeBase
                                                         ->label('Starting Time')
                                                         ->native(false)
                                                         ->prefixIcon('heroicon-m-clock')
+                                                        ->withoutSeconds()
                                                         ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                                             $endingTime = $get('ending_time');
                                                             if ($endingTime && $state >= $endingTime) {
@@ -602,6 +603,7 @@ class LeaveResource extends Resource implements HasKnowledgeBase
                                                         ->label('Ending Time')
                                                         ->native(false)
                                                         ->prefixIcon('heroicon-m-clock')
+                                                        ->withoutSeconds()
                                                         ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                                             $startingTime = $get('starting_time');
                                                             if ($startingTime && $startingTime >= $state) {
@@ -1081,7 +1083,7 @@ class LeaveResource extends Resource implements HasKnowledgeBase
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('type')
-                    ->label('Type')
+                    ->label('Period')
                     ->badge()
                     ->formatStateUsing(fn(string $state): string => match ($state) {
                         'regular' => 'Regular',
@@ -1089,6 +1091,10 @@ class LeaveResource extends Resource implements HasKnowledgeBase
                         'half_day' => 'Half Day',
                     })
                     ->color('info'),
+                Tables\Columns\TextColumn::make('leave_type')
+                    ->label('Type')
+                    ->badge()
+                    ->color('warning'),
                 Tables\Columns\TextColumn::make('paid')
                     ->badge()
                     ->formatStateUsing(fn(bool $state): string => $state ? 'Paid' : 'Unpaid')
@@ -1101,7 +1107,7 @@ class LeaveResource extends Resource implements HasKnowledgeBase
                             : null;
 
                         $time = $record->starting_time
-                            ? \Carbon\Carbon::parse($record->starting_time)->format('H:i:s')
+                            ? \Carbon\Carbon::parse($record->starting_time)->format('H:i A')
                             : null;
 
                         if ($date && $time) {
@@ -1123,7 +1129,7 @@ class LeaveResource extends Resource implements HasKnowledgeBase
                             : null;
 
                         $time = $record->ending_time
-                            ? \Carbon\Carbon::parse($record->ending_time)->format('H:i:s')
+                            ? \Carbon\Carbon::parse($record->ending_time)->format('H:i A')
                             : null;
 
                         if ($date && $time) {
@@ -1135,7 +1141,8 @@ class LeaveResource extends Resource implements HasKnowledgeBase
                         }
 
                         return '-';
-                    }),
+                    })
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('duration')
                     ->label('Duration')
                     ->getStateUsing(function ($record) {
@@ -1160,7 +1167,7 @@ class LeaveResource extends Resource implements HasKnowledgeBase
                 Tables\Columns\TextColumn::make('leave_reason')
                     ->limit(40),
                 Tables\Columns\TextColumn::make('status')
-                    ->description(fn (Leave $record): string => $record->rejection_reason ?? '')
+                    ->description(fn(Leave $record): string => $record->rejection_reason ?? '')
                     ->formatStateUsing(function ($state, $record) {
                         $latestLog = $record->leaveLogs()->latest('created_at')->first();
 

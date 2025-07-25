@@ -39,9 +39,9 @@
                     </p>
                 </div>
                 <div class="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                    <h3 class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Active Employees</h3>
+                    <h3 class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">One-Time Payments</h3>
                     <p class="text-2xl font-semibold text-gray-900 dark:text-white">
-                        {{ number_format($this->getViewData()['totalActiveEmployees']) }}
+                        {{ number_format($this->getViewData()['offCyclePayrolls']) }}
                     </p>
                 </div>
                 <div class="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">

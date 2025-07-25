@@ -49,7 +49,7 @@ class LeaveBalanceChart extends ChartWidget
         } elseif (
             Helper::isAssignUsers()
         ) {
-            return '300px'; // For assigned users
+            return '317px'; // For assigned users
         }
 
         return '325px'; // For regular users
