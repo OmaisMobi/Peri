@@ -143,8 +143,16 @@ class AttendanceTableWidget extends BaseWidget
             ])
             ->searchPlaceholder('Search Employee')
             ->query(fn() => $this->getTableQuery())
-            ->paginated(Helper::isAssignUsers() ? [2, 5, 10, 25, 50] : [5, 10, 25, 50])
-            ->defaultPaginationPageOption(Helper::isAssignUsers() ? 2 : 5)
+            ->paginated(
+                (Helper::isAssignUsers() && Auth::user()?->can('employee.manage'))
+                    ? [2, 5, 10, 25, 50]
+                    : [5, 10, 25, 50]
+            )
+            ->defaultPaginationPageOption(
+                (Helper::isAssignUsers() && Auth::user()?->can('employee.manage'))
+                    ? 2
+                    : 5
+            )
             ->recordUrl(fn($record) => url('/client/' . Filament::getTenant()->slug . '/attendance?highlight_user=' . $record->id))
             ->recordClasses('cursor-pointer');
     }
