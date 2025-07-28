@@ -6,7 +6,6 @@ use App\Filament\Client\Resources\EmployeeResource;
 use App\Models\DepartmentUser;
 use App\Models\Role;
 use App\Models\ShiftUser;
-use App\Models\User;
 use Filament\Actions;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;

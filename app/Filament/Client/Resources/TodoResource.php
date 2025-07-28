@@ -93,7 +93,7 @@ class TodoResource extends Resource
                             ->html()
                             ->wrap()
                             ->extraAttributes(['class' => 'whitespace-pre-wrap'])
-                            ->formatStateUsing(fn (string $state): string => nl2br($state)),
+                            ->formatStateUsing(fn(string $state): string => nl2br($state)),
                     ]),
                 ])->collapsible(),
             ])
@@ -114,11 +114,6 @@ class TodoResource extends Resource
                     ->visible(fn(Todo $record) => ! $record->is_completed),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
             ]);
     }
 

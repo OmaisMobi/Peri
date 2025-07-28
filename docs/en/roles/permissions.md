@@ -16,7 +16,7 @@ This document outlines the permissions that can be assigned and their correspond
 ## Employee
 
 -   **`Manage`**: Allows users to create new employee accounts and manage them.
--   **`View`**: Allows users to view all employees' details.
+-   **`View`**: Allows users to view all employees' details only.
 
 ## Holiday
 

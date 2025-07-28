@@ -131,7 +131,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants, HasDefau
 
     public function approvalSteps(): HasMany
     {
-        return $this->hasMany(\App\Models\ApprovalStep::class);
+        return $this->hasMany(\App\Models\ApprovalStep::class)->where('team_id', Filament::getTenant()->id);
     }
 
     public function teams(): BelongsToMany
