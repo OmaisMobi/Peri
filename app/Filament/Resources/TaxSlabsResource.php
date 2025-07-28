@@ -165,8 +165,6 @@ class TaxSlabsResource extends Resource
                             ->wrap(),
                     ]),
                 ])->collapsible(),
-
-
             ])
             ->defaultSort('country_id', 'asc')
             ->searchPlaceholder('Search Country')

@@ -157,6 +157,10 @@ class Team extends Model implements HasAvatar
     {
         return $this->hasMany(Attendance::class);
     }
+    public function todos()
+    {
+        return $this->hasMany(Todo::class);
+    }
     public function shiftUsers()
     {
         return $this->hasMany(ShiftUser::class);

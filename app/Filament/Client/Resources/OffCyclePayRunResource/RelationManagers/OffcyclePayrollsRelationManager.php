@@ -15,7 +15,7 @@ use Filament\Facades\Filament;
 use Illuminate\Support\Facades\DB;
 use Filament\Notifications\Notification;
 
-class OffCyclePayrollsRelationManager extends RelationManager
+class OffcyclePayrollsRelationManager extends RelationManager
 {
     protected static string $relationship = 'offCyclePayrolls'; // The relationship method on OffCyclePayRun model
     protected static ?string $title = 'One-Time Payroll Records'; // Title for the tab/section

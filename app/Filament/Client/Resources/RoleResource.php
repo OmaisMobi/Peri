@@ -49,7 +49,7 @@ class RoleResource extends Resource implements HasKnowledgeBase
             Forms\Components\Grid::make(12)
                 ->schema([
                     Forms\Components\Section::make('Role Details')
-                        ->columnSpan(8)
+                        ->columnSpan(6)
                         ->schema([
                             Section::make('')->schema([
                                 Forms\Components\TextInput::make('name')
@@ -90,12 +90,13 @@ class RoleResource extends Resource implements HasKnowledgeBase
                                             }
                                         }),
 
-
                                     Forms\Components\Hidden::make('assigned_users'),
 
                                     Forms\Components\MultiSelect::make('manual_assigned_users')
-                                        ->label('Selected Users')
-                                        ->options(fn() => Filament::getTenant()->users()->pluck('name', 'users.id'))
+                                        ->label('Selected Employees')
+                                        ->options(fn() => Filament::getTenant()
+                                            ? Filament::getTenant()->users()->where('active', 1)->pluck('name', 'users.id')
+                                            : [])
                                         ->visible(fn(callable $get) => $get('assignment') === 'select')
                                         ->reactive()
                                         ->afterStateHydrated(function (callable $set, $state, $get) {

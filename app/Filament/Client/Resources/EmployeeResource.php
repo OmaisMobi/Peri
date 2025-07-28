@@ -36,7 +36,6 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
             ->visibleToCurrentUser();
     }
 
-
     public static function getActiveNavigationIcon(): string|Htmlable|null
     {
         return str(self::getNavigationIcon())->replace('heroicon-o', 'heroicon-s')->toString();
@@ -53,7 +52,6 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
             )
             ->count();
     }
-
 
     public static function getDocumentation(): array
     {
