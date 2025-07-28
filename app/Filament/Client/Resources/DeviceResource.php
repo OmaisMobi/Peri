@@ -5,6 +5,7 @@ namespace App\Filament\Client\Resources;
 use App\Filament\Client\Resources\DeviceResource\Pages;
 use App\Models\Device;
 use Filament\Forms\Components\Card;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -28,12 +29,20 @@ class DeviceResource extends Resource implements HasKnowledgeBase
         return (string) static::getEloquentQuery()
             ->count();
     }
+
+    public static function getDocumentation(): array
+    {
+        return [
+            KnowledgeBase::model()::find('devices.introduction'),
+        ];
+    }
+
     public static function form(Form $form): Form
     {
-        return $form->schema(
-            [
-                Card::make()->schema(
-                    [
+        return $form->schema([
+            Grid::make(3)->schema([
+                Card::make()
+                    ->schema([
                         TextInput::make('device_name')
                             ->label('Device Name')
                             ->unique(ignoreRecord: true)
@@ -48,18 +57,11 @@ class DeviceResource extends Resource implements HasKnowledgeBase
                         TextInput::make('device_external_port')
                             ->label('External Port')
                             ->numeric()
-                            ->nullable()
-                    ]
-                ),
-            ]
-        );
-    }
-
-    public static function getDocumentation(): array
-    {
-        return [
-            KnowledgeBase::model()::find('devices.introduction'),
-        ];
+                            ->nullable(),
+                    ])
+                    ->columnSpan(1), // Card takes up 1/3 of the row
+            ]),
+        ]);
     }
 
     public static function table(Table $table): Table
@@ -75,21 +77,14 @@ class DeviceResource extends Resource implements HasKnowledgeBase
                 //
             ])
             ->actions([
-                Tables\Actions\DeleteAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
     }
 
     public static function getPages(): array

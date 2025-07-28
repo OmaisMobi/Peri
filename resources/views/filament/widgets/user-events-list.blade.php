@@ -153,11 +153,11 @@
                 <table class="w-full table-fixed"> {{-- Table for headers --}}
                     <thead class="border-b bg-gray-50 dark:bg-white/5">
                         <tr class="text-left text-sm">
-                            <th class="px-4 py-3.5 font-semibold text-black dark:text-gray-300" style="width: 50%;">
+                            <th class="px-4 py-3.5 font-semibold text-black dark:text-white" style="width: 50%;">
                                 Employee</th>
-                            <th class="px-4 py-3.5 font-semibold text-black dark:text-gray-300" style="width: 30%;">Type
+                            <th class="px-4 py-3.5 font-semibold text-black dark:text-white" style="width: 30%;">Type
                             </th>
-                            <th class="px-4 py-3.5 font-semibold text-black dark:text-gray-300" style="width: 20%;">Date
+                            <th class="px-4 py-3.5 font-semibold text-black dark:text-white" style="width: 20%;">Date
                             </th>
                         </tr>
                     </thead>

@@ -30,4 +30,4 @@ On the Employees list page, you can:
 
 ## Viewing Employee Details
 
-Clicking on an employee's name in the list will display their detailed profile, showing all the information entered during creation and any subsequent updates.
+Clicking on the `view` button in the list will display the respective employee's detailed profile.
