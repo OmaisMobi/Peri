@@ -16,7 +16,7 @@
                             'pending_approval' => 'bg-warning-200 text-warning-600',
                             'draft' => 'bg-warning-200 text-warning-600',
                             'rejected' => 'bg-danger-200 text-danger-600',
-                            default => 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300',
+                            default => 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
                         };
                         $formattedStatus = match (strtolower($status)) {
                             'finalized' => 'Approved',
@@ -53,7 +53,7 @@
                             </svg>
                         </div>
                     </div>
-                    <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
+                    <h3 class="text-sm font-medium text-gray-600 dark:text-gray-200 mb-1">
                         Total Net Pay
                     </h3>
                     <p class="text-2xl font-semibold text-primary-900 dark:text-white">
@@ -76,7 +76,7 @@
                         </svg>
                     </div>
                 </div>
-                <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
+                <h3 class="text-sm font-medium text-gray-600 dark:text-gray-200 mb-1">
                     Total Tax
                 </h3>
                 <p class="text-2xl font-semibold text-gray-900 dark:text-white">
@@ -98,7 +98,7 @@
                         </svg>
                     </div>
                 </div>
-                <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
+                <h3 class="text-sm font-medium text-gray-600 dark:text-gray-200 mb-1">
                     Employees Processed
                 </h3>
                 <p class="text-2xl font-semibold text-gray-900 dark:text-white">
@@ -120,7 +120,7 @@
                         </svg>
                     </div>
                 </div>
-                <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
+                <h3 class="text-sm font-medium text-gray-600 dark:text-gray-200 mb-1">
                     Total Active Employees
                 </h3>
                 <p

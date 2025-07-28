@@ -168,7 +168,7 @@ class UserEventsList extends Widget
                         'type'          => 'Probation End',
                         'date'          => $probationEndDate->format('M d'),
                         'original_date' => $probationEndDate,
-                        'days_until'    => $now->diffInDays($probationEndDate, false), // Can be negative if in the past
+                        'days_until'    => $now->diffInDays($probationEndDate, false),
                     ]);
                 }
             }
