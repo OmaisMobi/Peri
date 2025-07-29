@@ -252,6 +252,12 @@
                             <td>{{ $symbol }}{{ number_format($fund_data['calculated_amount']) }}</td>
                         </tr>
                     @endforeach
+                    @foreach ($payroll->loan_data ?? [] as $loan_data)
+                        <tr>
+                            <td>{{ $loan_data['loan_name'] }}</td>
+                            <td>{{ $symbol }}{{ number_format($loan_data['deducted_amount']) }}</td>
+                        </tr>
+                    @endforeach
                     @if ($showLate && !empty($attendance['late_minutes_deduction_amount']))
                         <tr>
                             <td>Late Penalties</td>

@@ -1,5 +1,5 @@
 <x-filament-panels::page>
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Profile Section -->
         <div class="lg:col-span-1">
             <x-filament::section class="overflow-hidden">
@@ -62,7 +62,7 @@
                     <!-- Contact Information -->
                     <div class="space-y-4">
                         <h3
-                            class="text-sm font-semibold text-gray-700 uppercase tracking-wide hidden sm:block dark:text-white">
+                            class="text-base font-semibold text-gray-700 uppercase tracking-wide hidden sm:block dark:text-white">
                             Contact
                             Information</h3>
                         <!-- Phone -->
@@ -267,130 +267,137 @@
             </x-filament::section>
 
             <!-- Salary Information -->
-            <x-filament::section>
-                <x-slot name="heading">
-                    <div>
-                        <span>Salary Information</span>
-                    </div>
-                </x-slot>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 dark:bg-gray-800">
-                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide dark:text-gray-200">Base
-                            Salary</p>
-                        <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                            {{ $record->bankDetails->first()->salary_currency ?? '' }}
-                            {{ number_format($record->bankDetails->first()->base_salary ?? 0, 2) }}
-                        </p>
-                    </div>
-                    @if ($record->probation)
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <x-filament::section>
+                    <x-slot name="heading">
+                        <div>
+                            <span>Salary Information</span>
+                        </div>
+                    </x-slot>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 dark:bg-gray-800">
                             <p class="text-xs font-medium text-gray-500 uppercase tracking-wide dark:text-gray-200">
-                                Probation Salary</p>
+                                Base
+                                Salary</p>
                             <p class="text-lg font-semibold text-gray-900 dark:text-white">
                                 {{ $record->bankDetails->first()->salary_currency ?? '' }}
-                                {{ number_format($record->bankDetails->first()->probation_salary ?? 0, 2) }}
+                                {{ number_format($record->bankDetails->first()->base_salary ?? 0, 2) }}
                             </p>
                         </div>
-                    @endif
-                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 dark:bg-gray-800">
-                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide dark:text-gray-200">Payment
-                            Method</p>
-                        <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                            {{ ucfirst(str_replace('_', ' ', $record->bankDetails->first()->payment_method ?? 'N/A')) }}
-                        </p>
-                    </div>
-                </div>
-
-                @if ($record->bankDetails->first() && $record->bankDetails->first()->payment_method === 'bank_transfer')
-                    <div class="mt-6">
-                        <h4 class="text-md font-semibold text-gray-700 dark:text-white mb-3">Bank Information</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        @if ($record->probation)
                             <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 dark:bg-gray-800">
                                 <p
                                     class="text-xs font-medium text-gray-500 uppercase tracking-wide dark:text-gray-200">
-                                    Account Holder Name</p>
+                                    Probation Salary</p>
                                 <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                                    {{ $record->bankDetails->first()->account_holder_name ?? 'N/A' }}</p>
+                                    {{ $record->bankDetails->first()->salary_currency ?? '' }}
+                                    {{ number_format($record->bankDetails->first()->probation_salary ?? 0, 2) }}
+                                </p>
                             </div>
-                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 dark:bg-gray-800">
-                                <p
-                                    class="text-xs font-medium text-gray-500 uppercase tracking-wide dark:text-gray-200">
-                                    Bank Name</p>
-                                <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                                    {{ $record->bankDetails->first()->bank_name ?? 'N/A' }}</p>
-                            </div>
-                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 dark:bg-gray-800">
-                                <p
-                                    class="text-xs font-medium text-gray-500 uppercase tracking-wide dark:text-gray-200">
-                                    Account Number</p>
-                                <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                                    {{ $record->bankDetails->first()->account_number ?? 'N/A' }}</p>
-                            </div>
+                        @endif
+                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 dark:bg-gray-800">
+                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wide dark:text-gray-200">
+                                Payment
+                                Method</p>
+                            <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                {{ ucfirst(str_replace('_', ' ', $record->bankDetails->first()->payment_method ?? 'N/A')) }}
+                            </p>
                         </div>
                     </div>
-                @endif
 
-                @if ($record->fundsForCurrentTeam->isNotEmpty())
-                    <div class="mt-6">
-                        <h4 class="text-md font-semibold text-gray-700 dark:text-white mb-3">Assigned Funds</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            @foreach ($record->fundsForCurrentTeam as $fund)
+                    @if ($record->bankDetails->first() && $record->bankDetails->first()->payment_method === 'bank_transfer')
+                        <div class="mt-6">
+                            <h4 class="text-md font-semibold text-gray-700 dark:text-white mb-3">Bank Information</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 dark:bg-gray-800">
-                                    <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ $fund->name }}
-                                    </p>
+                                    <p
+                                        class="text-xs font-medium text-gray-500 uppercase tracking-wide dark:text-gray-200">
+                                        Account Holder Name</p>
+                                    <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                        {{ $record->bankDetails->first()->account_holder_name ?? 'N/A' }}</p>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 dark:bg-gray-800">
+                                    <p
+                                        class="text-xs font-medium text-gray-500 uppercase tracking-wide dark:text-gray-200">
+                                        Bank Name</p>
+                                    <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                        {{ $record->bankDetails->first()->bank_name ?? 'N/A' }}</p>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 dark:bg-gray-800">
+                                    <p
+                                        class="text-xs font-medium text-gray-500 uppercase tracking-wide dark:text-gray-200">
+                                        Account Number</p>
+                                    <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                        {{ $record->bankDetails->first()->account_number ?? 'N/A' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    @if ($record->fundsForCurrentTeam->isNotEmpty())
+                        <div class="mt-6">
+                            <h4 class="text-md font-semibold text-gray-700 dark:text-white mb-3">Assigned Funds</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                @foreach ($record->fundsForCurrentTeam as $fund)
+                                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 dark:bg-gray-800">
+                                        <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                            {{ $fund->name }}
+                                        </p>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                </x-filament::section>
+
+                <!-- Leave Approval Hierarchy -->
+                <x-filament::section>
+                    <x-slot name="heading">
+                        <div>
+                            <span>Leave Approval Hierarchy</span>
+                        </div>
+                    </x-slot>
+                    @if ($record->approvalSteps->isNotEmpty())
+                        <div class="space-y-4">
+                            @foreach ($record->approvalSteps->sortBy('level') as $step)
+                                <div
+                                    class="flex items-center space-x-4 bg-gray-50 rounded-lg p-4 border border-gray-200 dark:bg-gray-800">
+                                    <div
+                                        class="h-10 w-10 bg-primary-500 rounded-full flex items-center justify-center text-white font-semibold text-lg shadow-lg">
+                                        {{ $step->level }}
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="text-lg ml-2 font-semibold text-gray-900 dark:text-white">
+                                            {{ $step->role->name ?? 'Role not found' }}</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:text-gray-200">
+                                                {{ match (strtolower($step->permission)) {
+                                                    'recommend' => 'Recommender',
+                                                    'approve' => 'Approver',
+                                                    default => ucfirst($step->permission),
+                                                } }}
+                                            </span>
+                                        </p>
+                                    </div>
                                 </div>
                             @endforeach
                         </div>
-                    </div>
-                @endif
-            </x-filament::section>
-
-            <!-- Leave Approval Hierarchy -->
-            <x-filament::section>
-                <x-slot name="heading">
-                    <div>
-                        <span>Leave Approval Hierarchy</span>
-                    </div>
-                </x-slot>
-                @if ($record->approvalSteps->isNotEmpty())
-                    <div class="space-y-4">
-                        @foreach ($record->approvalSteps->sortBy('level') as $step)
-                            <div
-                                class="flex items-center space-x-4 bg-gray-50 rounded-lg p-4 border border-gray-200 dark:bg-gray-800">
-                                <div
-                                    class="h-10 w-10 bg-primary-500 rounded-full flex items-center justify-center text-white font-semibold text-lg shadow-lg">
-                                    {{ $step->level }}
-                                </div>
-                                <div class="flex-1">
-                                    <h4 class="text-lg ml-2 font-semibold text-gray-900 dark:text-white">
-                                        {{ $step->role->name ?? 'Role not found' }}</h4>
-                                    <p class="text-sm text-gray-600 dark:text-gray-400">
-                                        <span
-                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:text-gray-200">
-                                            {{ match (strtolower($step->permission)) {
-                                                'recommend' => 'Recommender',
-                                                'approve' => 'Approver',
-                                                default => ucfirst($step->permission),
-                                            } }}
-                                        </span>
-                                    </p>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="text-center py-12">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                            </path>
-                        </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">No approval hierarchy</h3>
-                        <p class="mt-1 text-sm text-gray-500">No approval hierarchy has been set for this employee.</p>
-                    </div>
-                @endif
-            </x-filament::section>
+                    @else
+                        <div class="text-center py-12">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                </path>
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">No approval hierarchy</h3>
+                            <p class="mt-1 text-sm text-gray-500">No approval hierarchy has been set for this employee.
+                            </p>
+                        </div>
+                    @endif
+                </x-filament::section>
+            </div>
         </div>
     </div>
 </x-filament-panels::page>

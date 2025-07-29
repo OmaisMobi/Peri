@@ -27,6 +27,8 @@ class Payroll extends Model
         'earnings_data',
         'deductions_data',
         'fund_data',
+        'loan_data',
+        'loan_amount',
         'applied_one_time_deductions',
         'attendance_data',
         'deduct_late_penalties',
@@ -62,6 +64,7 @@ class Payroll extends Model
         'applied_increment_amount' => 'decimal:2',
         'other_payment_mode' => 'array',
         'fund_data' => 'array',
+        'loan_data' => 'array',
     ];
 
     /**
@@ -156,6 +159,10 @@ class Payroll extends Model
         foreach ($fundDeductions as $fundDeduction) {
             $total += (float)($fundDeduction['calculated_amount']);
         }
+
+        // Add loan amount
+        $total += (float)($this->loan_amount ?? 0);
+
         return round($total, 2);
     }
     public function team()
