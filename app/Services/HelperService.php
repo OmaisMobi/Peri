@@ -211,6 +211,11 @@ class HelperService
             return $this->handleSinglePunch($user, $currentDate, $allFingers, $policy, $stats);
         }
 
+        // Handle short-leave scenarios
+        if ($this->hasShortLeave($user, $currentDate)) {
+            return $this->handleShortLeave($user, $currentDate, $allFingers, $policy, $stats, $graceDaysUsed);
+        }
+
         // Handle half-day scenarios
         if ($this->CheckFirstTimeHalfDay($allFingers, $user, $currentDate)) {
             return $this->handleFirstHalfDayAttendance($user, $currentDate, $allFingers, $policy, $stats);
@@ -425,6 +430,39 @@ class HelperService
             '</small>';
 
         return $value;
+    }
+
+    /**
+     * Handle short leave attendance
+     */
+    private function handleShortLeave($user, $currentDate, $allFingers, $policy, &$stats, &$graceDaysUsed)
+    {
+        $lateMinutes = 0;
+        $graceMinTag = '';
+        $isLeave = $this->hasShortLeave($user, $currentDate);
+        $fingersFormatted = $allFingers->map(fn($f) => $f->format('H:i'))->implode('<br>');
+
+        // Calculate late minutes if policy enabled
+        if ($policy->late_policy_enabled == 1) {
+            $lateMinutes = $this->calculateLateMin($allFingers, $user, $currentDate);
+            $stats['totalLate'] += $lateMinutes;
+        }
+
+        // Apply grace period if enabled
+        if ($policy->grace_policy_enabled == 1) {
+            $graceMinTag = $this->applyGracePeriod($user, $currentDate, $allFingers, $policy, $lateMinutes, $graceDaysUsed);
+        }
+
+        if ($isLeave) {
+            $stats['totalLeaves'] += 0.25;
+            $prefix = $lateMinutes > 0
+                ? $graceMinTag . '<small class="text-xs text-gray-500 font-medium">' . $lateMinutes . ' M</small><br>'
+                : '';
+
+            return $prefix .
+                '<small class="text-xs text-success-500 font-medium">SL</small><br>' .
+                '<small class="text-xs text-gray-500 font-medium">' . $fingersFormatted . '</small>';
+        }
     }
 
     /**
@@ -917,12 +955,11 @@ class HelperService
     /**
      * Check if a short leave applies to the first time.
      *
-     * @param Collection $fingers
      * @param User $user
      * @param Carbon $date
      * @return bool
      */
-    public function checkShortLeaveFirstTime($fingers, $user, $date)
+    public function hasShortLeave($user, $date)
     {
         return Filament::getTenant()->leaves()
             ->where('user_id', $user->id)
@@ -996,7 +1033,7 @@ class HelperService
         $lateIn = 0;
         $earlyOut = 0;
 
-        if (!$this->checkShortLeaveFirstTime($fingers, $user, $date) && $policy->enable_late_come) {
+        if (!$this->hasShortLeave($user, $date) && $policy->enable_late_come) {
             $lateIn = $in->gt($shiftStart) ? $in->diffInMinutes($shiftStart) : 0;
         }
 
