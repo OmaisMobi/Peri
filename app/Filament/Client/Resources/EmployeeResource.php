@@ -32,10 +32,9 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['assignedShift.shift', 'assignedDepartment.department'])
+            ->with(['assignedShift.shift', 'assignedDepartment.department', 'approvalSteps.role'])
             ->visibleToCurrentUser();
     }
-
 
     public static function getActiveNavigationIcon(): string|Htmlable|null
     {
@@ -53,7 +52,6 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
             )
             ->count();
     }
-
 
     public static function getDocumentation(): array
     {
@@ -222,6 +220,8 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
                                         ->schema([
                                             Forms\Components\Hidden::make('team_id')
                                                 ->default(fn() => Filament::getTenant()->id),
+                                            Forms\Components\Hidden::make('user_id')
+                                                ->default(fn(callable $get) => $get('id')),
 
                                             Forms\Components\Select::make('role_id')
                                                 ->label('Role')
@@ -433,6 +433,7 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
     public static function table(Tables\Table $table): Tables\Table
     {
         return $table
+            ->recordUrl(null)
             ->query(
                 static::getEloquentQuery()
                     ->whereDoesntHave(
@@ -523,6 +524,7 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
@@ -537,6 +539,7 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
             'index' => Pages\ListEmployees::route('/'),
             'create' => Pages\CreateEmployee::route('/create'),
             'edit' => Pages\EditEmployee::route('/{record}/edit'),
+            'view' => Pages\ViewEmployee::route('/{record}'),
         ];
     }
 

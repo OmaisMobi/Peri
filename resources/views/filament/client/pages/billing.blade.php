@@ -65,7 +65,7 @@
                             @endif
                         </div>
 
-                        <ul class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                        <ul class="space-y-2 text-sm text-gray-700 dark:text-gray-200">
                             @foreach ($plan->features as $feature)
                                 <li class="flex items-center gap-2">
                                     @if (is_numeric($feature->value) || $feature->value > 0)

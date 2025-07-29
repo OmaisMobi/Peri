@@ -3,14 +3,8 @@
 namespace App\Filament\Client\Resources\PayRunResource\RelationManagers;
 
 use App\Filament\Client\Resources\PayRunResource;
-use App\Filament\Client\Resources\PayRunResource\Pages\EditPayroll;
 use App\Models\Payroll;
 use App\Services\PayrollCalculationService;
-use App\Models\SalaryComponent;
-use Filament\Facades\Filament;
-use Filament\Forms;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
@@ -35,7 +29,10 @@ class PayrollsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('total_earnings')->label('Earnings')->formatStateUsing(fn($state) => $currency . ' ' . number_format($state ?? 0)),
                 Tables\Columns\TextColumn::make('total_deductions')->label('Deductions')->formatStateUsing(fn($state) => $currency . ' ' . number_format($state ?? 0)),
                 Tables\Columns\TextColumn::make('tax_data.monthly_tax_calculated')->label('Tax')->formatStateUsing(fn($state) => $currency . ' ' . number_format($state ?? 0)),
-                Tables\Columns\TextColumn::make('net_payable_salary')->label('Net Pay')->formatStateUsing(fn($state) => $currency . ' ' . number_format($state ?? 0)),
+                Tables\Columns\TextColumn::make('net_payable_salary')
+                    ->label('Net Pay')
+                    ->formatStateUsing(fn($state) => $currency . ' ' . number_format($state ?? 0))
+                    ->color(fn($state) => ($state ?? 0) < 0 ? 'danger' : null),
             ])
             ->searchPlaceholder('Search Employee')
             ->actions([

@@ -111,6 +111,23 @@ class EditPayRun extends EditRecord
         try {
             $this->record->payrolls()->update(['status' => true]);
             $this->record->update(['status' => 'finalized']);
+
+            // Finalize loan deductions
+            foreach ($this->record->payrolls as $payroll) {
+                if (!empty($payroll->loan_data)) {
+                    foreach ($payroll->loan_data as $loanDeduction) {
+                        $loan = \App\Models\Loan::find($loanDeduction['loan_id']);
+                        if ($loan) {
+                            $loan->remaining_amount -= $loanDeduction['deducted_amount'];
+                            if ($loan->remaining_amount <= 0) {
+                                $loan->status = 'paid';
+                            }
+                            $loan->save();
+                        }
+                    }
+                }
+            }
+
             $this->redirect($this->getResource()::getUrl('index'));
 
             DB::commit();

@@ -49,86 +49,92 @@ class NoticeResource extends Resource implements HasKnowledgeBase
     public static function form(Forms\Form $form): Forms\Form
     {
         return $form->schema([
-            Hidden::make('id')
-                ->default(fn() => uniqid()),
-            TextInput::make('name')
-                ->label('Notice Title')
-                ->required()
-                ->columnSpan('half'),
-            Fieldset::make('Content Type')
+            Forms\Components\Grid::make(3)
                 ->schema([
-                    Forms\Components\Group::make([
-                        Select::make('content.type')
-                            ->label('')
-                            ->options([
-                                'file' => 'Attach File',
-                                'link' => 'Attach URL',
-                                'text' => 'Add Text',
-                            ])
-                            ->reactive()
-                            ->native(false),
+                    Forms\Components\Card::make()
+                        ->columnSpan(1)
+                        ->schema([
+                            Hidden::make('id')
+                                ->default(fn() => uniqid()),
+                            TextInput::make('name')
+                                ->label('Notice Title')
+                                ->required()
+                                ->maxLength(255),
+                            Fieldset::make('Content Type')
+                                ->schema([
+                                    Forms\Components\Group::make([
+                                        Select::make('content.type')
+                                            ->label('')
+                                            ->options([
+                                                'file' => 'Attach File',
+                                                'link' => 'Attach URL',
+                                                'text' => 'Add Text',
+                                            ])
+                                            ->reactive()
+                                            ->native(false),
 
-                        RichEditor::make('content.body')
-                            ->label('Content Text')
-                            ->required()
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'strike',
-                                'underline',
-                                'undo',
-                            ])
-                            ->columnSpan('full')
-                            ->visible(fn(Get $get) => $get('content.type') === 'text'),
+                                        RichEditor::make('content.body')
+                                            ->label('Content Text')
+                                            ->required()
+                                            ->toolbarButtons([
+                                                'bold',
+                                                'italic',
+                                                'strike',
+                                                'underline',
+                                                'undo',
+                                            ])
+                                            ->columnSpanFull()
+                                            ->visible(fn(Get $get) => $get('content.type') === 'text'),
 
-                        FileUpload::make('content.document')
-                            ->label('Upload File')
-                            ->hint('Accepted File Types: PDF, Images')
-                            ->directory('uploads/notices')
-                            ->preserveFilenames()
-                            ->imagePreviewHeight('250')
-                            ->acceptedFileTypes(['application/pdf', 'image/*'])
-                            ->removeUploadedFileButtonPosition('right')
-                            ->visibility('public')
-                            ->columnSpan('half')
-                            ->required()
-                            ->visible(fn(Get $get) => $get('content.type') === 'file'),
+                                        FileUpload::make('content.document')
+                                            ->label('Upload File')
+                                            ->hint('Accepted File Types: PDF, Images')
+                                            ->directory('uploads/notices')
+                                            ->preserveFilenames()
+                                            ->imagePreviewHeight('250')
+                                            ->acceptedFileTypes(['application/pdf', 'image/*'])
+                                            ->removeUploadedFileButtonPosition('right')
+                                            ->visibility('public')
+                                            ->required()
+                                            ->visible(fn(Get $get) => $get('content.type') === 'file'),
 
-                        TextInput::make('content.link_url')
-                            ->label('Link URL')
-                            ->url()
-                            ->required()
-                            ->columnSpanFull()
-                            ->suffixIcon('heroicon-m-link')
-                            ->visible(fn(Get $get) => $get('content.type') === 'link'),
-                    ])->columnSpan('full'),
-                ]),
+                                        TextInput::make('content.link_url')
+                                            ->label('Link URL')
+                                            ->url()
+                                            ->required()
+                                            ->columnSpanFull()
+                                            ->suffixIcon('heroicon-m-link')
+                                            ->visible(fn(Get $get) => $get('content.type') === 'link'),
+                                    ])->columnSpanFull(),
+                                ]),
 
-            // Colors
-            Grid::make(3)->schema([
-                ColorPicker::make('content.BackgroundColor')
-                    ->label('Background Color')
-                    ->default('#D97706'),
+                            // Colors
+                            Grid::make(3)->schema([
+                                ColorPicker::make('content.BackgroundColor')
+                                    ->label('Background Color')
+                                    ->default('#D97706'),
 
-                ColorPicker::make('content.IconColor')
-                    ->label('Icon Color')
-                    ->default('#FFFFFF'),
+                                ColorPicker::make('content.IconColor')
+                                    ->label('Icon Color')
+                                    ->default('#FFFFFF'),
 
-                ColorPicker::make('content.TextColor')
-                    ->label('Text Color')
-                    ->default('#FFFFFF'),
-            ]),
+                                ColorPicker::make('content.TextColor')
+                                    ->label('Text Color')
+                                    ->default('#FFFFFF'),
+                            ]),
 
-            // Options
-            Fieldset::make('Options')->schema([
-                Checkbox::make('content.can_be_closed_by_user')
-                    ->label('Can Be Closed By User')
-                    ->columnSpan('full'),
-            ]),
+                            // Options
+                            Fieldset::make('Options')->schema([
+                                Checkbox::make('content.can_be_closed_by_user')
+                                    ->label('Can Be Closed By User')
+                                    ->columnSpanFull(),
+                            ]),
 
-            // Status toggle
-            Toggle::make('is_active')
-                ->label('Is Active'),
+                            // Status toggle
+                            Toggle::make('is_active')
+                                ->label('Is Active'),
+                        ]),
+                ])
         ]);
     }
     public static function getEloquentQuery(): Builder

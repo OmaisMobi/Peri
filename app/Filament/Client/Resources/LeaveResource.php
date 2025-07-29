@@ -1142,7 +1142,7 @@ class LeaveResource extends Resource implements HasKnowledgeBase
 
                         return '-';
                     })
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('duration')
                     ->label('Duration')
                     ->getStateUsing(function ($record) {
@@ -1196,7 +1196,7 @@ class LeaveResource extends Resource implements HasKnowledgeBase
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
-                    ->toggleable()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
             ])
             ->searchPlaceholder('Search Employee')

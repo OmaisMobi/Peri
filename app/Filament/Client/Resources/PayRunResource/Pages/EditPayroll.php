@@ -205,6 +205,7 @@ class EditPayroll extends Page
                                 ->reactive(),
                         ])->columnSpanFull(),
                         Forms\Components\Fieldset::make('Fund Earnings')
+                            ->label('Fund Reimbursement')
                             ->schema(
                                 collect(Helper::getEmployeeFund($this->payroll->user))->map(function ($fund) use ($currency) {
                                     return Forms\Components\Toggle::make('fund_toggle_' . $fund->id)
@@ -353,6 +354,7 @@ class EditPayroll extends Page
                             ])->columns(2),
                         // -- Attendance Adjustments --
                         Forms\Components\Fieldset::make('Fund')
+                            ->label('Active Funds')
                             ->columnSpanFull()
                             ->schema([
                                 Repeater::make('fund_data')
@@ -369,6 +371,31 @@ class EditPayroll extends Page
                                     ])->columns(2)->addable(false)->deletable(false)->reorderable(false),
                             ])->columns(2)->visible(fn() => $this->checkFunds()),
 
+                        Forms\Components\Fieldset::make('Loan Details')
+                            ->schema([
+                                Forms\Components\Placeholder::make('loan_deduction_amount')
+                                    ->label('Amount Deducted')
+                                    ->content(fn() => $currency . ' ' . number_format($this->payroll?->loan_amount ?? 0)),
+
+                                Forms\Components\Placeholder::make('installments_left')
+                                    ->label('Installments Left')
+                                    ->content(function () {
+                                        $totalInstallmentsLeft = 0;
+
+                                        if (!empty($this->payroll->loan_data)) {
+                                            foreach ($this->payroll->loan_data as $loanDeduction) {
+                                                $loan = \App\Models\Loan::find($loanDeduction['loan_id']);
+                                                if ($loan && $loan->installment_amount > 0) {
+                                                    $installments = ceil($loan->remaining_amount / $loan->installment_amount);
+                                                    $totalInstallmentsLeft += max(0, $installments - 1);
+                                                }
+                                            }
+                                        }
+                                        return $totalInstallmentsLeft > 0 ? $totalInstallmentsLeft : 0;
+                                    }),
+
+                            ])
+                            ->visible(fn() => ($this->payroll?->loan_amount ?? 0) > 0),
                     ]),
             ])
             ->statePath('data');

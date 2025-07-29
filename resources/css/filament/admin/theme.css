@@ -221,6 +221,10 @@ body {
     @apply !px-6 !gap-x-1;
 }
 
+.fi-resource-todos .fi-icon-btn svg {
+    transform: rotate(180deg) !important;
+}
+
 .fi-resource-tax-slabs .fi-icon-btn svg {
     transform: rotate(180deg) !important;
 }

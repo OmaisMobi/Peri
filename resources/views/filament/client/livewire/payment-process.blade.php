@@ -18,7 +18,7 @@
                 <h2 class="text-xl md:text-2xl mt-4 mb-4 font-semibold text-gray-700 dark:text-gray-200">Payment
                     Details</h2>
 
-                <div class="space-y-4 text-gray-600 dark:text-gray-300">
+                <div class="space-y-4 text-gray-600 dark:text-gray-200">
                     <div class="flex justify-between items-center">
                         <span class="font-medium">Payment For:</span>
                         <span class="font-semibold text-gray-800 dark:text-white">{{ $payment->detail }}</span>

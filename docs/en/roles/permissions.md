@@ -7,41 +7,21 @@ order: 3
 
 This document outlines the permissions that can be assigned and their corresponding functionalities.
 
-## Attendance Policies
-
--   **`Manage`**: Allows users to update pre-defined attendance policies.
--   **`View`**: Allows users to view the attendance policies.
-
 ## Biometric
 
 -   **`Approve`**: Allows users to approve biometric requests.
 -   **`Create Request`**: Allows users to create new biometric requests.
 -   **`View`**: Allows users to view existing biometric requests.
 
-## Department
-
--   **`Manage`**: Allows users to create new departments and manage (edit and delete) them.
--   **`View`**: Allows users to view existing departments.
-
-## Device
-
--   **`Manage`**: Allows users to add new devices and manage them.
--   **`View`**: Allows users to view existing devices.
-
 ## Employee
 
 -   **`Manage`**: Allows users to create new employee accounts and manage them.
--   **`View`**: Allows users to view all employees' details.
+-   **`View`**: Allows users to view all employees' details only.
 
 ## Holiday
 
 -   **`Manage`**: Allows users to create new holidays and manage them.
 -   **`View`**: Allows users to view existing holidays.
-
-## Leave Type
-
--   **`Manage`**: Allows users to create new leave types and manage them.
--   **`View`**: Allows users to view existing leave types.
 
 ## Notice Board
 
@@ -55,12 +35,6 @@ This document outlines the permissions that can be assigned and their correspond
 -   **`Manage Records`**: Allows users to view and download all payroll records including individual salary slips of employees.
 -   **`View Records`**: Allows users to view their individual payroll records.
 
-## Role
+# Assign Employees
 
--   **`Manage`**: Allows users to create new roles and manage them.
--   **`View`**: Allows users to view existing roles.
-
-## Shift
-
--   **`Manage`**: Allows users to create new shifts and manage them.
--   **`View`**: Allows users to view existing shifts.
+This setting controls which employees users with that specific role can see and manage. If you select specific employees, users assigned that role will only have access to attendance and leaves for those selected individuals. Admin users are unaffected.
