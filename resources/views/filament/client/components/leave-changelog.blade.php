@@ -7,7 +7,7 @@
         </h3>
         <div class="space-y-3">
             @foreach ($changelogs as $log)
-                <div class="flex items-start text-sm text-gray-700 dark:text-gray-300">
+                <div class="flex items-start text-sm text-gray-700 dark:text-gray-200">
                     <x-heroicon-s-pencil-square class="w-5 h-5 text-gray-400 mr-2 flex-shrink-0" /> {{-- Icon added back --}}
                     <div>
                         {{-- Extracting the updater's name from remarks --}}

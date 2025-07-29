@@ -106,10 +106,6 @@ class Team extends Model implements HasAvatar
     {
         return $this->hasMany(LeaveLog::class);
     }
-    // public function supportReplies()
-    // {
-    //     return $this->hasMany(SupportReply::class);
-    // }
     public function leaveTypes()
     {
         return $this->hasMany(LeaveType::class);
@@ -172,6 +168,10 @@ class Team extends Model implements HasAvatar
     public function funds()
     {
         return $this->hasMany(Fund::class);
+    }
+    public function loans()
+    {
+        return $this->hasMany(Loan::class);
     }
     public function bankDetails()
     {

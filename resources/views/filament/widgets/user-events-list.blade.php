@@ -74,7 +74,7 @@
                 <div class="flex w-full items-center justify-between gap-x-4">
                     <div class="relative flex-grow">
                         {{-- Search Icon --}}
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <div class="absolute inset-y-0 left-0 flex items-center p-3 pointer-events-none">
                             <svg wire:loading.remove.delay.default="1" wire:target="tableSearch"
                                 class="h-5 w-5 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -153,11 +153,11 @@
                 <table class="w-full table-fixed"> {{-- Table for headers --}}
                     <thead class="border-b bg-gray-50 dark:bg-white/5">
                         <tr class="text-left text-sm">
-                            <th class="px-4 py-3.5 font-semibold text-black dark:text-white" style="width: 50%;">
+                            <th class="px-4 py-3.5 font-semibold text-black dark:text-gray-200" style="width: 50%;">
                                 Employee</th>
-                            <th class="px-4 py-3.5 font-semibold text-black dark:text-white" style="width: 30%;">Type
+                            <th class="px-4 py-3.5 font-semibold text-black dark:text-gray-200" style="width: 30%;">Type
                             </th>
-                            <th class="px-4 py-3.5 font-semibold text-black dark:text-white" style="width: 20%;">Date
+                            <th class="px-4 py-3.5 font-semibold text-black dark:text-gray-200" style="width: 20%;">Date
                             </th>
                         </tr>
                     </thead>
@@ -170,9 +170,8 @@
                 <table class="w-full table-fixed"> {{-- Table for body content --}}
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                         @forelse ($events as $event)
-                            <tr
-                                class="text-sm even:bg-gray-50 dark:even:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                                <td class="px-4 py-4 lg:py-3 text-left text-gray-700 dark:text-gray-300"
+                            <tr class="text-sm even:bg-gray-50 dark:even:bg-gray-800/50">
+                                <td class="px-4 py-4 lg:py-3 text-left text-gray-700 dark:text-gray-200"
                                     style="width: 50%;">
                                     <div class="flex items-center">
                                         <img class="h-10 w-10 rounded-full object-cover mr-4"
@@ -180,7 +179,7 @@
                                         <span style="padding-left: 10px;">{{ $event['name'] }}</span>
                                     </div>
                                 </td>
-                                <td class="px-4 lg:py-3 text-gray-700 dark:text-gray-300">
+                                <td class="px-4 lg:py-3 text-gray-700 dark:text-gray-200">
                                     @php
                                         $badgeColor = 'gray'; // Default color
                                         $badgeClass = '';
@@ -201,7 +200,7 @@
                                         </span>
                                     </x-filament::badge>
                                 </td>
-                                <td class="px-4 lg:py-3 text-left text-gray-700 dark:text-gray-300">
+                                <td class="px-4 lg:py-3 text-left text-gray-700 dark:text-gray-200">
                                     {{ $event['date'] }}
                                     @if ($event['days_until'] < 0 && $event['type'] === 'Probation End')
                                         <span class="text-xs text-gray-500 dark:text-gray-400">

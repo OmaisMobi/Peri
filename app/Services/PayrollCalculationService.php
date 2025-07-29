@@ -9,6 +9,7 @@ use App\Models\ShiftLog;
 use App\Models\Leave;
 use App\Models\SalaryComponent;
 use App\Models\Holiday;
+use App\Models\Loan;
 use App\Models\Team;
 use Carbon\Carbon;
 use Filament\Facades\Filament;
@@ -114,6 +115,9 @@ class PayrollCalculationService
         $totalNonTaxableEarnings = $totalCustomNonTaxableEarnings + ($configPenaltyTaxStatus === 'non-taxable' ? $attendanceEarningsValue : 0.0);
         $totalNonTaxableDeductions = $totalCustomNonTaxableDeductions + ($configPenaltyTaxStatus === 'non-taxable' ? $attendancePenaltiesValue : 0.0);
 
+        $loanDeductions = $this->processLoanDeductions($user, $periodStartDate);
+        $totalNonTaxableDeductions += $loanDeductions['total_loan_deduction'];
+
         $taxData = $this->calculateTax(
             $user,
             $teamId,
@@ -142,6 +146,8 @@ class PayrollCalculationService
             'earnings_data' => $processedComponents['final_earnings_for_db'],
             'deductions_data' => $processedComponents['final_deductions_for_db'],
             'fund_data' => ($processedComponents['final_fund_deductions_for_db']) ?? null,
+            'loan_data' => $loanDeductions['loan_deductions_for_db'],
+            'loan_amount' => $loanDeductions['total_loan_deduction'],
             'applied_one_time_deductions' => $processedComponents['applied_one_time_deduction_ids'],
             'attendance_data' => [
                 'total_days' => $totalDaysInPeriod,
@@ -163,6 +169,36 @@ class PayrollCalculationService
             'net_payable_salary' => $netMonthlyPayableSalary,
             'currency_symbol' => $this->currencySymbol,
             'original_base_salary_before_run_increment' => round($originalBaseSalaryForCalc),
+        ];
+    }
+
+    private function processLoanDeductions(User $user, Carbon $periodStartDate): array
+    {
+        $loans = Loan::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->where('deduction_start_date', '<=', $periodStartDate->toDateString())
+            ->get();
+
+        $totalLoanDeduction = 0;
+        $loanDeductionsForDb = [];
+
+        foreach ($loans as $loan) {
+            $installment = (float) $loan->installment_amount;
+            $remaining = (float) $loan->remaining_amount;
+
+            $deductionAmount = min($installment, $remaining);
+            $totalLoanDeduction += $deductionAmount;
+
+            $loanDeductionsForDb[] = [
+                'loan_id' => $loan->id,
+                'loan_name' => $loan->loan_name,
+                'deducted_amount' => $deductionAmount,
+            ];
+        }
+
+        return [
+            'total_loan_deduction' => $totalLoanDeduction,
+            'loan_deductions_for_db' => $loanDeductionsForDb,
         ];
     }
 
@@ -978,6 +1014,9 @@ class PayrollCalculationService
         $updatedAttendanceData['deduct_absent_penalties'] = $deductAbsentPenalties;
         $updatedAttendanceData['apply_overtime_earnings'] = $applyOvertimeEarnings;
 
+        $loanDeductions = $this->processLoanDeductions($user, $periodStartDate);
+        $totalNonTaxableDeductions += $loanDeductions['total_loan_deduction'];
+
         $taxData = $this->calculateTax(
             $user,
             Filament::getTenant()->id,
@@ -1000,6 +1039,8 @@ class PayrollCalculationService
             'applied_increment_amount' => round($appliedIncrementAmount),
             'earnings_data' => $finalEarningsForDb,
             'deductions_data' => $finalDeductionsForDb,
+            'loan_data' => $loanDeductions['loan_deductions_for_db'],
+            'loan_amount' => $loanDeductions['total_loan_deduction'],
             'attendance_data' => $updatedAttendanceData,
             'tax_data' => $taxData,
             'net_payable_salary' => $netPayableSalary,
