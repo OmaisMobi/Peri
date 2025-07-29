@@ -21,9 +21,8 @@ use Closure;
 class LoanResource extends Resource
 {
     protected static ?string $model = Loan::class;
-
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
+    protected static ?string $navigationGroup = 'Payroll Management';
+    protected static ?int $navigationSort = 3;
     protected static ?string $tenantOwnershipRelationshipName = 'team';
 
     public static function form(Form $form): Form
