@@ -273,7 +273,8 @@ class SalaryComponentResource extends Resource implements HasKnowledgeBase
 
     public static function canViewAny(): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->hasRole('Payroll Manager'));
+        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->hasRole('Payroll Manager') ||
+            Auth::user()->can('payroll.manage'));
     }
 
     public static function canCreate(): bool

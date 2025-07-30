@@ -447,6 +447,8 @@ class PayrollRecordResource extends Resource
 
         // Check permissions first (cheaper query)
         if (!($user->hasRole('Admin') ||
+            Auth::user()->hasRole('CEO') ||
+            Auth::user()->hasRole('Payroll Manager') ||
             $user->can('payroll.manage') ||
             $user->can('payroll.approve'))) {
             return false;
@@ -469,6 +471,8 @@ class PayrollRecordResource extends Resource
     {
         return Auth::check() && (
             Auth::user()->hasRole('Admin') ||
+            Auth::user()->hasRole('CEO') ||
+            Auth::user()->hasRole('Payroll Manager') ||
             Auth::user()->can('payroll.viewRecords') ||
             Auth::user()->can('payroll.manage') ||
             Auth::user()->can('payroll.approve')

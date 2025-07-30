@@ -238,8 +238,12 @@ class LoanResource extends Resource
     {
         return Auth::check() && (
             Auth::user()->hasRole('Admin') || Auth::user()->hasRole('Payroll Manager') ||
-            Auth::user()->can('payroll.manage') ||
-            Auth::user()->can('payroll.approve')
+            Auth::user()->can('payroll.manage')
         );
+    }
+
+    public static function canCreate(): bool
+    {
+        return !Filament::getTenant()->payruns()->whereIn('status', ['draft', 'pending_approval', 'rejected'])->exists();
     }
 }
