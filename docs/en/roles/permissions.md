@@ -30,10 +30,9 @@ This document outlines the permissions that can be assigned and their correspond
 
 ## Payroll
 
--   **`Create`**: Allows users to create payrolls. This also includes management of salary components, funds and loans.
--   **`Approve`**: Allows users to approve payrolls.
--   **`Manage Records`**: Allows users to view and download all payroll records including individual salary slips of employees.
+-   **`Manage`**: Allows users to create payrolls, view and download employees' payslips and manage elements like salary components, funds and loans.
 -   **`View Records`**: Allows users to view their individual payroll records.
+-   **`Approve`**: Allows users to approve payrolls.
 
 # Assign Employees
 

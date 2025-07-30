@@ -238,7 +238,7 @@ class LoanResource extends Resource
     {
         return Auth::check() && (
             Auth::user()->hasRole('Admin') || Auth::user()->hasRole('Payroll Manager') ||
-            Auth::user()->can('payroll.create') ||
+            Auth::user()->can('payroll.manage') ||
             Auth::user()->can('payroll.approve')
         );
     }

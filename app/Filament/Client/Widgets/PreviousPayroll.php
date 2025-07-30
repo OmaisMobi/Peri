@@ -31,7 +31,7 @@ class PreviousPayroll extends Widget
 
         $hasAdminRole = $user->hasRole('Admin');
         $hasPayrollRole = $user->hasRole('Payroll Manager');
-        $hasPayrollPermission = $user->can('payroll.create');
+        $hasPayrollPermission = $user->can('payroll.manage');
 
         if (
             $hasAdminRole ||
