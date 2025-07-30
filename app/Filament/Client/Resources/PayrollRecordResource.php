@@ -3,23 +3,16 @@
 namespace App\Filament\Client\Resources;
 
 use App\Filament\Client\Resources\PayrollRecordResource\Pages;
-use App\Filament\Client\Resources\PayrollRecordResource\RelationManagers;
-use App\Models\Department;
 use App\Models\Payroll;
-use App\Models\Shift;
-use App\Models\User;
 use Carbon\Carbon;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Facades\Filament;
-use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Grouping\Group;
 use Filament\Tables\Enums\FiltersLayout;
@@ -191,16 +184,7 @@ class PayrollRecordResource extends Resource
             ->actions([
                 ViewAction::make('viewPayroll')
                     ->label('View')
-                    ->slideOver()
-                    ->modalHeading('Pay Details')
-                    ->modalSubmitAction(false)
-                    ->modalCancelActionLabel('Close')
-                    ->modalContent(
-                        fn($record) =>
-                        view('livewire.view-payslip', [
-                            'payroll' => $record,
-                        ])
-                    )
+                    ->url(fn($record) => route('payslip.show', $record), shouldOpenInNewTab: true)
                     ->visible(
                         fn($record) =>
                         $record->status == 1 && (

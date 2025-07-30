@@ -8,7 +8,8 @@
         }
 
         .payslip-container {
-            width: 100%;
+            font-family: Poppins, sans-serif;
+            /* width: 100%; */
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
@@ -333,7 +334,8 @@
                                 <td>{{ $attendance['total_overtime_minutes'] ?? 0 }}</td>
                             @endif
                             <td>{{ $symbol }}{{ number_format($attendance['per_day_rate_used'] ?? 0, 2) }}</td>
-                            <td>{{ $symbol }}{{ number_format($attendance['per_minute_rate_used'] ?? 0, 4) }}</td>
+                            <td>{{ $symbol }}{{ number_format($attendance['per_minute_rate_used'] ?? 0, 4) }}
+                            </td>
                         </tr>
                     </tbody>
                 </table>

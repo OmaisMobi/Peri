@@ -10,6 +10,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\ViewAction;
 
 class PayrollsRelationManager extends RelationManager
 {
@@ -36,6 +37,10 @@ class PayrollsRelationManager extends RelationManager
             ])
             ->searchPlaceholder('Search Employee')
             ->actions([
+                ViewAction::make('viewPayroll')
+                    ->label('View')
+                    ->url(fn($record) => route('payslip.show', $record), shouldOpenInNewTab: true)
+                    ->visible(fn(): bool => $this->getOwnerRecord()->status === 'pending_approval' || $this->getOwnerRecord()->status === 'draft' || $this->getOwnerRecord()->status === 'rejected' || $this->getOwnerRecord()->status === 'finalized'),
                 Action::make('edit')
                     ->label('Edit')
                     ->icon('heroicon-m-pencil-square')
