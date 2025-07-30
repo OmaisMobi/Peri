@@ -16,8 +16,11 @@
                 </x-filament::button>
             </div>
         @else
-            <h2 class="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white sm:text-3xl">
+            <h2 class="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white sm:text-3xl block sm:hidden">
                 Dashboard
+            </h2>
+            <h2 class="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white sm:text-3xl hidden sm:block">
+                Dashboard Overview
             </h2>
 
             <div
