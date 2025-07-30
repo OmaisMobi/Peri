@@ -49,7 +49,7 @@ class EditPayRun extends EditRecord
                 ->action('approvePayRun')
                 ->visible(
                     fn($record) => ($record->status === 'pending_approval') &&
-                        ($user->hasPermissionTo('payroll.approve') || $user->hasRole('Admin'))
+                        ($user->hasPermissionTo('payroll.approve') || $user->hasRole('Admin') || $user->hasRole('CEO'))
                 )
                 ->requiresConfirmation(false),
 
@@ -78,7 +78,7 @@ class EditPayRun extends EditRecord
                 })
                 ->visible(
                     fn($record) => ($record->status === 'pending_approval') &&
-                        ($user->hasPermissionTo('payroll.approve') || $user->hasRole('Admin'))
+                        ($user->hasPermissionTo('payroll.approve') || $user->hasRole('Admin') || $user->hasRole('CEO'))
                 )
                 ->modalHeading('')
                 ->modalSubmitActionLabel('Reject'),

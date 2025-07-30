@@ -21,6 +21,7 @@ use Filament\Tables\Columns\ToggleColumn;
 use Icetalker\FilamentTableRepeater\Forms\Components\TableRepeater;
 use App\Services\PayrollCalculationService;
 use Illuminate\Support\Facades\Auth;
+use Filament\Facades\Filament;
 
 class FundsResource extends Resource
 {
@@ -207,21 +208,12 @@ class FundsResource extends Resource
     }
     public static function canViewAny(): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->hasRole('Payroll Manager'));
+        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->hasRole('Payroll Manager') ||
+            Auth::user()->can('payroll.manage'));
     }
 
     public static function canCreate(): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->hasRole('Payroll Manager'));
-    }
-
-    public static function canEdit($record): bool
-    {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->hasRole('Payroll Manager'));
-    }
-
-    public static function canDelete($record): bool
-    {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->hasRole('Payroll Manager'));
+        return !Filament::getTenant()->payruns()->whereIn('status', ['draft', 'pending_approval', 'rejected'])->exists();
     }
 }
