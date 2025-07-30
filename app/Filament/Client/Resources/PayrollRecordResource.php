@@ -42,12 +42,17 @@ class PayrollRecordResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return Filament::getTenant()
+        $query = Filament::getTenant()
             ->payrolls()
             ->getQuery()
             ->with(['user.assignedDepartment.department', 'user.assignedShift.shift'])
-            ->orderByDesc('date_range_start')
-            ->visibleToCurrentUser();
+            ->orderByDesc('date_range_start');
+
+        if (Auth::user()->can('payroll.manage')) {
+            return $query;
+        }
+
+        return $query->visibleToCurrentUser();
     }
 
     public static function form(Form $form): Form
@@ -88,7 +93,7 @@ class PayrollRecordResource extends Resource
             ->defaultGroup('date_range_start')
             ->filters([
                 ...(Auth::user()->hasRole('Admin') ||
-                    Auth::user()->can('payroll.manageRecords') ||
+                    Auth::user()->can('payroll.manage') ||
                     Auth::user()->can('payroll.approve')
                     ? [
                         SelectFilter::make('payroll_period')
@@ -188,8 +193,8 @@ class PayrollRecordResource extends Resource
                     ->visible(
                         fn($record) =>
                         $record->status == 1 && (
-                            Auth::user()->hasRole('Admin') ||
-                            Auth::user()->can('payroll.manageRecords') ||
+                            Auth::user()->hasRole('Admin') || Auth::user()->hasRole('Payroll Manager') ||
+                            Auth::user()->can('payroll.manage') ||
                             Auth::user()->can('payroll.viewRecords') ||
                             Auth::user()->can('payroll.approve')
                         )
@@ -202,8 +207,8 @@ class PayrollRecordResource extends Resource
                     ->visible(
                         fn($record) =>
                         $record->status == 1 && (
-                            Auth::user()->hasRole('Admin') ||
-                            Auth::user()->can('payroll.manageRecords') ||
+                            Auth::user()->hasRole('Admin') || Auth::user()->hasRole('Payroll Manager') ||
+                            Auth::user()->can('payroll.manage') ||
                             Auth::user()->can('payroll.approve')
                         )
                     ),
@@ -442,7 +447,7 @@ class PayrollRecordResource extends Resource
 
         // Check permissions first (cheaper query)
         if (!($user->hasRole('Admin') ||
-            $user->can('payroll.manageRecords') ||
+            $user->can('payroll.manage') ||
             $user->can('payroll.approve'))) {
             return false;
         }
@@ -465,7 +470,7 @@ class PayrollRecordResource extends Resource
         return Auth::check() && (
             Auth::user()->hasRole('Admin') ||
             Auth::user()->can('payroll.viewRecords') ||
-            Auth::user()->can('payroll.manageRecords') ||
+            Auth::user()->can('payroll.manage') ||
             Auth::user()->can('payroll.approve')
         );
     }

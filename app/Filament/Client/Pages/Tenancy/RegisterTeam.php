@@ -90,7 +90,7 @@ class RegisterTeam extends RegisterTenant
         $this->teamInitailize($team);
         return $team;
     }
-    
+
     protected function teamInitailize(Team $team)
     {
         $amsRole = Role::create([
@@ -121,9 +121,8 @@ class RegisterTeam extends RegisterTenant
         $payrollRole->givePermissionTo([
             'employees.manage',
             'departments.manage',
-            'payroll.create',
             'payroll.approve',
-            'payroll.manageRecords'
+            'payroll.manage'
         ]);
     }
 }

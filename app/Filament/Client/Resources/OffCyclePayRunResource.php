@@ -206,6 +206,6 @@ class OffCyclePayRunResource extends Resource
         if (!$user) {
             return false;
         }
-        return $user->hasRole('Admin') || $user->can('payroll.approve') || $user->can('payroll.manageRecords');
+        return $user->hasRole('Admin') || $user->can('payroll.approve') || $user->can('payroll.manage');
     }
 }
