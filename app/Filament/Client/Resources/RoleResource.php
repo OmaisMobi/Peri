@@ -54,7 +54,6 @@ class RoleResource extends Resource implements HasKnowledgeBase
                             Section::make('')->schema([
                                 Forms\Components\TextInput::make('name')
                                     ->required()
-
                                     ->hintAction(
                                         HelpAction::forDocumentable('roles.permissions')
                                             ->label('More About Permissions')

@@ -5,6 +5,7 @@ use App\Filament\Client\Pages\Auth\Invitation;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\Home;
 use App\Http\Controllers\SyncController;
+use App\Http\Controllers\PayslipController;
 use App\Http\Controllers\PayrollDownloadController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Middleware\ExtendedAuthenticate;
@@ -31,6 +32,7 @@ Route::get('auth/login/google', [GoogleAuthController::class, 'redirect'])->name
 Route::get('auth/google/callback', [GoogleAuthController::class, 'callback']);
 
 Route::get('/payroll/{payroll}/download', [PayrollDownloadController::class, 'download'])->name('payroll.download');
+Route::get('/payslip/{payroll}', [PayslipController::class, 'show'])->name('payslip.show');
 
 Route::get('/offcycle-payroll/{offCyclePayroll}/download-pdf', [PayrollDownloadController::class, 'downloadOffCycle'])->name('offcycle-payroll.download_pdf');
 Route::get('/admin/preview/{id}', function ($id) {
