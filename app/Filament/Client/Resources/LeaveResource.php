@@ -1235,7 +1235,8 @@ class LeaveResource extends Resource implements HasKnowledgeBase
             ->defaultSort('created_at', 'desc')
             ->actions([
                 Tables\Actions\ViewAction::make()
-                    ->modalHeading('')
+                    ->url(fn (Leave $record): string => static::getUrl('edit', ['record' => $record]))
+                    ->openUrlInNewTab()
                     ->visible(fn($record) => in_array($record->status, ['cancelled', 'approved', 'rejected'])),
                 Tables\Actions\EditAction::make()
                     ->url(fn (Leave $record): string => static::getUrl('edit', ['record' => $record]))
