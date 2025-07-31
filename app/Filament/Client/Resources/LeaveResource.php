@@ -5,6 +5,7 @@ namespace App\Filament\Client\Resources;
 use App\Facades\Helper;
 use App\Filament\Client\Resources\LeaveResource\Pages;
 use App\Models\Leave;
+use App\Models\LeaveLog;
 use Carbon\Carbon;
 use Filament\Facades\Filament;
 use Filament\Forms;
@@ -1237,7 +1238,71 @@ class LeaveResource extends Resource implements HasKnowledgeBase
                     ->modalHeading('')
                     ->visible(fn($record) => in_array($record->status, ['cancelled', 'approved', 'rejected'])),
                 Tables\Actions\EditAction::make()
+                    ->url(fn (Leave $record): string => static::getUrl('edit', ['record' => $record]))
+                    ->openUrlInNewTab()
                     ->visible(fn($record) => in_array($record->status, ['pending', 'forwarded'])),
+                Tables\Actions\Action::make('approve')
+                    ->label('Approve')
+                    ->color('success')
+                    ->icon('heroicon-o-check-circle')
+                    ->action(function (Leave $record) {
+                        $pendingLog = $record->leaveLogs()->where('status', 'pending')->orderBy('level', 'asc')->first();
+                        if (!$pendingLog) return;
+
+                        $currentUser = Auth::user();
+                        $currentRole = $currentUser->roles->first();
+                        $currentLevel = $pendingLog->level;
+
+                        // Determine permission (recommend/approve)
+                        $approvalStep = DB::table('approval_steps')
+                            ->where('team_id', Filament::getTenant()->id)
+                            ->where('user_id', $record->user_id)
+                            ->where('level', $currentLevel)
+                            ->where('role_id', $currentRole->id)
+                            ->first();
+
+                        $actionStatus = ($approvalStep && $approvalStep->permission === 'approve') ? 'approved' : 'forwarded';
+
+                        // Update the pending log
+                        $pendingLog->update([
+                            'role_id' => $currentRole->id,
+                            'status'  => $actionStatus,
+                        ]);
+
+                        // Check for next level
+                        $nextLevel = $currentLevel + 1;
+                        $nextStep = DB::table('approval_steps')
+                            ->where('team_id', Filament::getTenant()->id)
+                            ->where('user_id', $record->user_id)
+                            ->where('level', $nextLevel)
+                            ->first();
+
+                        if ($nextStep && $actionStatus === 'forwarded') {
+                            $record->update(['status' => 'forwarded']);
+                            LeaveLog::create([
+                                'leave_id' => $record->id,
+                                'role_id'  => $nextStep->role_id,
+                                'level'    => $nextLevel,
+                                'status'   => 'pending',
+                            ]);
+                        } else {
+                            $record->update(['status' => 'approved']);
+                        }
+                    })
+                    ->visible(function (Leave $record): bool {
+                        $user = Auth::user();
+                        if (!$user->hasRole(['Admin', 'CEO', 'AMS Manager']) && !$user->is_approver) {
+                            return false;
+                        }
+                        if (!in_array($record->status, ['pending', 'forwarded'])) {
+                            return false;
+                        }
+                        $pendingLog = $record->leaveLogs()->where('status', 'pending')->orderBy('level', 'asc')->first();
+                        if (!$pendingLog) {
+                            return false;
+                        }
+                        return $pendingLog->role_id === $user->roles->first()->id;
+                    }),
                 Tables\Actions\DeleteAction::make()
                     ->visible(fn($record) => $record->status === 'pending' && Auth::id() === $record->user_id),
                 Tables\Actions\Action::make('cancel')

@@ -1,6 +1,5 @@
 {{-- Save as resources/views/components/approval-flow.blade.php --}}
 <style>
-    /* General container styling */
     .approval-container {
         overflow-x: auto;
         padding-bottom: 1rem;
@@ -10,27 +9,19 @@
     .approval-steps {
         display: flex;
         align-items: flex-start;
-        /* Align items to the top */
         gap: 1.5rem;
-        /* Increased gap for better spacing */
     }
 
-    /* Individual step styling */
     .approval-step {
         position: relative;
         flex: 0 0 180px;
-        /* Wider steps for more content */
-        min-height: 90px;
-        /* Taller steps */
+        min-height: 110px;
+        /* Increased min-height */
         border: 2px solid #e2e8f0;
-        /* Lighter border */
         border-radius: 12px;
-        /* Softer corners */
         background-color: #f8fafc;
-        /* Very light background */
         display: flex;
         flex-direction: column;
-        /* Stack content vertically */
         align-items: center;
         justify-content: center;
         padding: 1rem;
@@ -40,49 +31,53 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 
-    /* Connecting line */
     .approval-line {
         position: absolute;
         top: 50%;
         left: 100%;
         width: 1.5rem;
-        /* Matches the gap */
         height: 3px;
         background-color: #e2e8f0;
         transform: translateY(-50%);
         z-index: -1;
-        /* Behind the steps */
     }
 
-    /* Content inside each step */
     .step-content {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        flex-grow: 1;
     }
 
     .step-name {
         font-weight: 700;
-        /* Bolder name */
         font-size: 0.9rem;
         color: #1e293b;
+        line-height: 1.2;
+        /* Adjust line-height for wrapping */
     }
 
     .step-status {
         margin-top: 0.5rem;
-        font-size: 0.75rem;
-        font-weight: 500;
-        padding: 0.2rem 0.6rem;
-        border-radius: 9999px;
-        /* Pill shape */
+        font-size: 0.8rem;
+        /* Larger status font */
+        font-weight: 600;
+        padding: 0;
+        border-radius: 0;
+        background-color: transparent !important;
+        /* Remove background */
     }
 
-    /* Dark mode adjustments */
+    .step-date {
+        font-size: 0.7rem;
+        color: #64748b;
+        margin-top: 0.25rem;
+    }
+
     .dark .approval-step {
         background-color: #1f2937;
         border-color: #374151;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
     .dark .step-name {
@@ -93,12 +88,12 @@
         background-color: #374151;
     }
 
-    /* --- Status Color Variants --- */
+    .dark .step-date {
+        color: #9ca3af;
+    }
 
-    /* Submitted / Approved / Forwarded (Positive) */
+    /* Status Color Variants */
     .status-positive {
-        background-color: #f0fdf4;
-        /* Light green */
         border-color: #bbf7d0;
     }
 
@@ -107,12 +102,10 @@
     }
 
     .status-positive .step-status {
-        background-color: #22c55e;
-        color: #ffffff;
+        color: #22c55e;
     }
 
     .dark .status-positive {
-        background-color: #166534;
         border-color: #22c55e;
     }
 
@@ -120,10 +113,11 @@
         color: #dcfce7;
     }
 
-    /* Current Pending Step (Active) */
+    .dark .status-positive .step-status {
+        color: #4ade80;
+    }
+
     .status-active {
-        background-color: #fefce8;
-        /* Light yellow */
         border-color: #fde047;
     }
 
@@ -132,12 +126,10 @@
     }
 
     .status-active .step-status {
-        background-color: #f59e0b;
-        color: #ffffff;
+        color: #f59e0b;
     }
 
     .dark .status-active {
-        background-color: #854d0e;
         border-color: #facc15;
     }
 
@@ -145,9 +137,11 @@
         color: #fef9c3;
     }
 
-    /* Future Pending Step (Neutral) */
+    .dark .status-active .step-status {
+        color: #f59e0b;
+    }
+
     .status-neutral {
-        background-color: #f8fafc;
         border-color: #e2e8f0;
     }
 
@@ -156,12 +150,10 @@
     }
 
     .status-neutral .step-status {
-        background-color: #e2e8f0;
-        color: #475569;
+        color: #64748b;
     }
 
     .dark .status-neutral {
-        background-color: #1f2937;
         border-color: #374151;
     }
 
@@ -170,14 +162,10 @@
     }
 
     .dark .status-neutral .step-status {
-        background-color: #4b5563;
-        color: #d1d5db;
+        color: #9ca3af;
     }
 
-    /* Rejected (Negative) */
     .status-negative {
-        background-color: #fef2f2;
-        /* Light red */
         border-color: #fecaca;
     }
 
@@ -186,17 +174,19 @@
     }
 
     .status-negative .step-status {
-        background-color: #ef4444;
-        color: #ffffff;
+        color: #ef4444;
     }
 
     .dark .status-negative {
-        background-color: #991b1b;
         border-color: #ef4444;
     }
 
     .dark .status-negative .step-name {
         color: #fee2e2;
+    }
+
+    .dark .status-negative .step-status {
+        color: #f87171;
     }
 </style>
 
@@ -204,7 +194,6 @@
     $hasLeave = isset($leave) && $leave?->id;
     $logsByLevel = $hasLeave ? $logs->keyBy('level') : collect();
     $finalStatus = $hasLeave ? strtolower($leave->status) : 'pending';
-    $maxLevel = $hierarchySteps->max('level') ?? 0;
     $rejectionLog = $logsByLevel->firstWhere('status', 'rejected');
 @endphp
 
@@ -215,11 +204,15 @@
         @php
             $requestorStatusClass = $hasLeave ? 'status-positive' : 'status-active';
             $requestorStatusLabel = $hasLeave ? 'Submitted' : 'Draft';
+            $requestorDate = $hasLeave ? $leave->created_at->format('M d, Y') : null;
         @endphp
         <div class="approval-step {{ $requestorStatusClass }}">
             <div class="step-content">
                 <div class="step-name">{{ $leaveUser->name }}</div>
                 <div class="step-status">{{ $requestorStatusLabel }}</div>
+                @if ($requestorDate)
+                    <div class="step-date">{{ $requestorDate }}</div>
+                @endif
             </div>
             @if ($hierarchySteps->isNotEmpty())
                 <div class="approval-line"></div>
@@ -233,12 +226,12 @@
                 $log = $logsByLevel->get($level);
                 $status = $log ? strtolower($log->status) : 'pending';
                 $roleName = \App\Models\Role::find($step->role_id)?->name ?? 'Role not found';
+                $actionDate = $log && !in_array($status, ['pending']) ? $log->created_at->format('M d, Y') : null;
 
                 $statusClass = 'status-neutral';
                 $statusLabel = 'Pending';
 
                 if ($rejectionLog) {
-                    // If there is a rejection, color steps based on their status before rejection.
                     if ($level < $rejectionLog->level) {
                         $statusClass = 'status-positive';
                         $statusLabel = 'Forwarded';
@@ -253,9 +246,7 @@
                     $statusClass = 'status-positive';
                     $statusLabel = 'Approved';
                 } else {
-                    // Normal flow: submitted -> pending -> approved/forwarded
                     $currentPendingLevel = $logsByLevel->where('status', 'pending')->min('level');
-
                     if ($status === 'forwarded' || $status === 'approved') {
                         $statusClass = 'status-positive';
                         $statusLabel = ucfirst($status);
@@ -267,13 +258,15 @@
                         $statusLabel = 'Pending';
                     }
                 }
-
             @endphp
 
             <div class="approval-step {{ $statusClass }}">
                 <div class="step-content">
                     <div class="step-name">{{ $roleName }}</div>
                     <div class="step-status">{{ $statusLabel }}</div>
+                    @if ($actionDate)
+                        <div class="step-date">{{ $actionDate }}</div>
+                    @endif
                 </div>
                 @if ($index < $hierarchySteps->count() - 1)
                     <div class="approval-line"></div>
