@@ -1,238 +1,285 @@
 {{-- Save as resources/views/components/approval-flow.blade.php --}}
 <style>
+    /* General container styling */
     .approval-container {
         overflow-x: auto;
-        padding-bottom: 0.5rem;
+        padding-bottom: 1rem;
         margin-bottom: 1rem;
     }
 
     .approval-steps {
         display: flex;
-        align-items: center;
-        gap: 1rem;
+        align-items: flex-start;
+        /* Align items to the top */
+        gap: 1.5rem;
+        /* Increased gap for better spacing */
     }
 
+    /* Individual step styling */
     .approval-step {
         position: relative;
-        flex: 0 0 160px;
-        /* exactly 160px wide */
-        height: 80px;
-        /* or min-height if you prefer */
-        border: 2px solid #cbd5e0;
-        border-radius: 8px;
-        background-color: #f1f5f9;
+        flex: 0 0 180px;
+        /* Wider steps for more content */
+        min-height: 90px;
+        /* Taller steps */
+        border: 2px solid #e2e8f0;
+        /* Lighter border */
+        border-radius: 12px;
+        /* Softer corners */
+        background-color: #f8fafc;
+        /* Very light background */
         display: flex;
+        flex-direction: column;
+        /* Stack content vertically */
         align-items: center;
         justify-content: center;
-        padding: 0.5rem;
+        padding: 1rem;
         box-sizing: border-box;
-        transition: background-color 0.2s, border-color 0.2s;
+        text-align: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 
+    /* Connecting line */
     .approval-line {
         position: absolute;
         top: 50%;
         left: 100%;
-        width: 1.2rem;
+        width: 1.5rem;
+        /* Matches the gap */
         height: 3px;
-        background-color: #cbd5e0;
+        background-color: #e2e8f0;
         transform: translateY(-50%);
-        z-index: 1;
+        z-index: -1;
+        /* Behind the steps */
     }
 
+    /* Content inside each step */
     .step-content {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        text-align: center;
-        /* ensure wrapping: */
-        overflow-wrap: break-word;
-        word-break: break-word;
-        hyphens: auto;
     }
 
     .step-name {
-        font-weight: 600;
-        font-size: 0.8rem;
+        font-weight: 700;
+        /* Bolder name */
+        font-size: 0.9rem;
+        color: #1e293b;
     }
 
     .step-status {
-        margin-top: 0.25rem;
-        font-size: 0.7rem;
-        color: #4a5568;
+        margin-top: 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        padding: 0.2rem 0.6rem;
+        border-radius: 9999px;
+        /* Pill shape */
     }
 
-    .dark .step-status {
-        color: whitesmoke;
+    /* Dark mode adjustments */
+    .dark .approval-step {
+        background-color: #1f2937;
+        border-color: #374151;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
-    /* Status color variants */
-    .status-approved,
-    .status-forwarded,
-    .status-submitted {
-        background-color: #dcfce7;
-        border-color: #15803d33;
+    .dark .step-name {
+        color: #f3f4f6;
     }
 
-    .dark .status-approved,
-    .dark .status-forwarded,
-    .dark .status-submitted {
-        background-color: #288d4f;
-        border-color: #5eea85;
+    .dark .approval-line {
+        background-color: #374151;
     }
 
-    .dark .status-pending {
-        background-color: gray;
-        border-color: whitesmoke;
+    /* --- Status Color Variants --- */
+
+    /* Submitted / Approved / Forwarded (Positive) */
+    .status-positive {
+        background-color: #f0fdf4;
+        /* Light green */
+        border-color: #bbf7d0;
     }
 
-    .status-next-pending {
-        background-color: #fef9c3;
+    .status-positive .step-name {
+        color: #15803d;
+    }
+
+    .status-positive .step-status {
+        background-color: #22c55e;
+        color: #ffffff;
+    }
+
+    .dark .status-positive {
+        background-color: #166534;
+        border-color: #22c55e;
+    }
+
+    .dark .status-positive .step-name {
+        color: #dcfce7;
+    }
+
+    /* Current Pending Step (Active) */
+    .status-active {
+        background-color: #fefce8;
+        /* Light yellow */
         border-color: #fde047;
     }
 
-    .dark .status-next-pending {
-        background-color: #cd7621;
+    .status-active .step-name {
+        color: #a16207;
+    }
+
+    .status-active .step-status {
+        background-color: #f59e0b;
+        color: #ffffff;
+    }
+
+    .dark .status-active {
+        background-color: #854d0e;
         border-color: #facc15;
     }
 
-    .status-rejected {
-        background-color: #fee2e2;
-        border-color: #fca5a5;
+    .dark .status-active .step-name {
+        color: #fef9c3;
     }
 
-    .dark .status-rejected {
-        background-color: #7f1d1d;
-        border-color: #f87171;
+    /* Future Pending Step (Neutral) */
+    .status-neutral {
+        background-color: #f8fafc;
+        border-color: #e2e8f0;
+    }
+
+    .status-neutral .step-name {
+        color: #475569;
+    }
+
+    .status-neutral .step-status {
+        background-color: #e2e8f0;
+        color: #475569;
+    }
+
+    .dark .status-neutral {
+        background-color: #1f2937;
+        border-color: #374151;
+    }
+
+    .dark .status-neutral .step-name {
+        color: #9ca3af;
+    }
+
+    .dark .status-neutral .step-status {
+        background-color: #4b5563;
+        color: #d1d5db;
+    }
+
+    /* Rejected (Negative) */
+    .status-negative {
+        background-color: #fef2f2;
+        /* Light red */
+        border-color: #fecaca;
+    }
+
+    .status-negative .step-name {
+        color: #b91c1c;
+    }
+
+    .status-negative .step-status {
+        background-color: #ef4444;
+        color: #ffffff;
+    }
+
+    .dark .status-negative {
+        background-color: #991b1b;
+        border-color: #ef4444;
+    }
+
+    .dark .status-negative .step-name {
+        color: #fee2e2;
     }
 </style>
 
-
 @php
     $hasLeave = isset($leave) && $leave?->id;
-    // cancellation logs only if we have a leave
-    $cancellationLog = $hasLeave
-        ? $logs
-            ->filter(fn($log) => in_array($log->status, ['pending_cancellation', 'cancelled', 'rejected_cancellation']))
-            ->sortBy('level')
-            ->first()
-        : null;
-    $finalCancelLog =
-        $hasLeave && $cancellationLog
-            ? $logs
-                ->whereIn('status', ['cancelled', 'rejected_cancellation'])
-                ->sortByDesc('level')
-                ->first()
-            : null;
-
-    // Track if we need to hide status on subsequent steps
-    $hideNextStatus = false;
+    $logsByLevel = $hasLeave ? $logs->keyBy('level') : collect();
+    $finalStatus = $hasLeave ? strtolower($leave->status) : 'pending';
+    $maxLevel = $hierarchySteps->max('level') ?? 0;
+    $rejectionLog = $logsByLevel->firstWhere('status', 'rejected');
 @endphp
 
 <div class="approval-container">
     <div class="approval-steps">
 
-        <!-- Requestor -->
+        <!-- 1. Requestor Step -->
         @php
-            $requestorStatusClass = $hasLeave ? 'status-submitted' : 'status-submitted';
-            $requestorStatusLabel = $hasLeave ? 'Submitted' : 'Pending';
+            $requestorStatusClass = $hasLeave ? 'status-positive' : 'status-active';
+            $requestorStatusLabel = $hasLeave ? 'Submitted' : 'Draft';
         @endphp
-
         <div class="approval-step {{ $requestorStatusClass }}">
             <div class="step-content">
-                <div class="step-name">{{ $leave?->user->name ?? auth()->user()->name }}</div>
+                <div class="step-name">{{ $leaveUser->name }}</div>
                 <div class="step-status">{{ $requestorStatusLabel }}</div>
             </div>
-            <div class="approval-line"></div>
+            @if ($hierarchySteps->isNotEmpty())
+                <div class="approval-line"></div>
+            @endif
         </div>
 
-
-        <!-- Dynamic approval roles -->
-        @php $nextPendingFound = false; @endphp
+        <!-- 2. Approval Hierarchy Steps -->
         @foreach ($hierarchySteps as $index => $step)
             @php
-                $lvl = $step->level + 1;
-                $rawStatus = strtolower($logs[$lvl]->status ?? '');
-                $isPending = $rawStatus === 'pending' || !$rawStatus;
+                $level = $step->level;
+                $log = $logsByLevel->get($level);
+                $status = $log ? strtolower($log->status) : 'pending';
+                $roleName = \App\Models\Role::find($step->role_id)?->name ?? 'Role not found';
 
-                $statusClass = 'status-pending';
-                $statusLabel = '';
+                $statusClass = 'status-neutral';
+                $statusLabel = 'Pending';
 
-                if (!$hideNextStatus) {
-                    switch ($rawStatus) {
-                        case 'approved':
-                            $statusClass = 'status-approved';
-                            $statusLabel = 'Approved';
-                            $hideNextStatus = true;
-                            break;
-                        case 'rejected':
-                            $statusClass = 'status-rejected';
-                            $statusLabel = 'Rejected';
-                            $hideNextStatus = true;
-                            break;
-                        case 'forwarded':
-                            $statusClass = 'status-forwarded';
-                            $statusLabel = 'Forwarded';
-                            break;
-                        default:
-                            if ($isPending && !$nextPendingFound) {
-                                $statusClass = 'status-next-pending';
-                                $statusLabel = 'Pending';
-                                $nextPendingFound = true;
-                            } elseif ($rawStatus) {
-                                $statusLabel = ucfirst($rawStatus);
-                            }
-                            break;
+                if ($rejectionLog) {
+                    // If there is a rejection, color steps based on their status before rejection.
+                    if ($level < $rejectionLog->level) {
+                        $statusClass = 'status-positive';
+                        $statusLabel = 'Forwarded';
+                    } elseif ($level == $rejectionLog->level) {
+                        $statusClass = 'status-negative';
+                        $statusLabel = 'Rejected';
+                    } else {
+                        $statusClass = 'status-neutral';
+                        $statusLabel = 'Not Reached';
+                    }
+                } elseif ($finalStatus === 'approved') {
+                    $statusClass = 'status-positive';
+                    $statusLabel = 'Approved';
+                } else {
+                    // Normal flow: submitted -> pending -> approved/forwarded
+                    $currentPendingLevel = $logsByLevel->where('status', 'pending')->min('level');
+
+                    if ($status === 'forwarded' || $status === 'approved') {
+                        $statusClass = 'status-positive';
+                        $statusLabel = ucfirst($status);
+                    } elseif ($level == $currentPendingLevel) {
+                        $statusClass = 'status-active';
+                        $statusLabel = 'Pending Action';
+                    } elseif ($level > $currentPendingLevel) {
+                        $statusClass = 'status-neutral';
+                        $statusLabel = 'Pending';
                     }
                 }
 
-                $roleName = \App\Models\Role::find($step->role_id)?->name ?? 'Unknown Role';
             @endphp
 
             <div class="approval-step {{ $statusClass }}">
                 <div class="step-content">
                     <div class="step-name">{{ $roleName }}</div>
-                    @if ($statusLabel)
-                        <div class="step-status">{{ $statusLabel }}</div>
-                    @endif
+                    <div class="step-status">{{ $statusLabel }}</div>
                 </div>
-                @if ($index < count($hierarchySteps) - 1 || $cancellationLog)
+                @if ($index < $hierarchySteps->count() - 1)
                     <div class="approval-line"></div>
                 @endif
             </div>
         @endforeach
-
-
-
-        <!-- Cancellation flow (if any) -->
-        @if ($cancellationLog)
-            <!-- Cancel request by user -->
-            <div class="approval-step status-submitted">
-                <div class="step-content">
-                    <div class="step-name">{{ $leave->user->name }}</div>
-                    <div class="step-status">Cancellation Requested</div>
-                </div>
-                <div class="approval-line"></div>
-            </div>
-
-            <!-- Final cancellation decision -->
-            @if ($finalCancelLog)
-                @php
-                    $actorRole = \App\Models\Role::find($finalCancelLog->role_id)?->name;
-                    $wasCancel = $finalCancelLog->status === 'cancelled';
-                    $finalClass = $wasCancel ? 'status-approved' : 'status-rejected';
-                    $finalLabel = $wasCancel ? 'Cancelled' : 'Cancellation Rejected';
-                @endphp
-
-                <div class="approval-step {{ $finalClass }}">
-                    <div class="step-content">
-                        <div class="step-name">{{ $actorRole }}</div>
-                        <div class="step-status">{{ $finalLabel }}</div>
-                    </div>
-                </div>
-            @endif
-        @endif
 
     </div>
 </div>

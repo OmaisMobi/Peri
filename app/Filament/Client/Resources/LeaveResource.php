@@ -839,6 +839,7 @@ class LeaveResource extends Resource implements HasKnowledgeBase
 
                         Select::make('approval_status')
                             ->label('Approval')
+                            ->required()
                             ->options(function (Forms\Get $get) {
                                 $leaveId = $get('id');
                                 if (!$leaveId) {
