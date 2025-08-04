@@ -322,7 +322,7 @@
                 $deductions = collect();
 
                 $earnings->push([
-                    'title' => 'Base Salary',
+                    'title' => 'Gross Salary',
                     'calculated_amount' => $payroll->base_salary,
                 ]);
 
@@ -365,7 +365,11 @@
 
                 $attendance = $payroll->attendance_data ?? [];
 
-                if ($showOvertime && !empty($attendance['overtime_earning_amount']) && $attendance['overtime_earning_amount'] > 0) {
+                if (
+                    $showOvertime &&
+                    !empty($attendance['overtime_earning_amount']) &&
+                    $attendance['overtime_earning_amount'] > 0
+                ) {
                     $earnings->push([
                         'title' => 'Overtime Earning',
                         'calculated_amount' => $attendance['overtime_earning_amount'],
@@ -383,7 +387,11 @@
                     ]);
                 }
 
-                if ($showAbsent && !empty($attendance['absent_deduction_amount']) && $attendance['absent_deduction_amount'] > 0) {
+                if (
+                    $showAbsent &&
+                    !empty($attendance['absent_deduction_amount']) &&
+                    $attendance['absent_deduction_amount'] > 0
+                ) {
                     $deductions->push([
                         'title' => 'Absent Deduction',
                         'calculated_amount' => $attendance['absent_deduction_amount'],

@@ -12,7 +12,6 @@ class SalaryComponent extends Model
 
     protected $fillable = [
         'team_id',
-        'name',
         'title',
         'component_type',
         'value_type',
