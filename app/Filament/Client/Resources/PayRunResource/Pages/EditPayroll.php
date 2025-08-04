@@ -343,15 +343,31 @@ class EditPayroll extends Page
                         Forms\Components\Fieldset::make('Attendance Adjustments')
                             ->columnSpanFull()
                             ->schema([
-                                Forms\Components\TextInput::make('overtime_earning_amount')->label('Overtime Earning')->numeric()->disabled(),
+                                Forms\Components\TextInput::make('overtime_earning_amount')
+                                    ->label('Overtime Earning')
+                                    ->numeric()
+                                    ->disabled()
+                                    ->formatStateUsing(fn($state) => round($state)),
+
                                 Forms\Components\Toggle::make('apply_overtime_earnings')->label('Apply'),
 
-                                Forms\Components\TextInput::make('late_deduction_amount')->label('Late Deduction')->numeric()->disabled(),
+                                Forms\Components\TextInput::make('late_deduction_amount')
+                                    ->label('Late Deduction')
+                                    ->numeric()
+                                    ->disabled()
+                                    ->formatStateUsing(fn($state) => round($state)),
+
                                 Forms\Components\Toggle::make('deduct_late_penalties')->label('Apply'),
 
-                                Forms\Components\TextInput::make('absent_deduction_amount')->label('Absent Deduction')->numeric()->disabled(),
+                                Forms\Components\TextInput::make('absent_deduction_amount')
+                                    ->label('Absent Deduction')
+                                    ->numeric()
+                                    ->disabled()
+                                    ->formatStateUsing(fn($state) => round($state)),
+
                                 Forms\Components\Toggle::make('deduct_absent_penalties')->label('Apply'),
-                            ])->columns(2),
+                            ])
+                            ->columns(2),
                         // -- Attendance Adjustments --
                         Forms\Components\Fieldset::make('Fund')
                             ->label('Active Funds')

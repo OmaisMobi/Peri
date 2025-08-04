@@ -16,6 +16,7 @@ use Filament\Facades\Filament;
 use JaOcero\RadioDeck\Forms\Components\RadioDeck;
 use Guava\FilamentKnowledgeBase\Contracts\HasKnowledgeBase;
 use Guava\FilamentKnowledgeBase\Facades\KnowledgeBase;
+use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
 
 class EmployeeResource extends Resource implements HasKnowledgeBase
 {
@@ -91,10 +92,10 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
                                                     'male'   => 'Male',
                                                     'female' => 'Female',
                                                 ]),
-                                            Forms\Components\DatePicker::make('date_of_birth')
+                                            DateRangePicker::make('date_of_birth')
                                                 ->label('Date Of Birth')
-                                                ->native(false)
-                                                ->prefixIcon('heroicon-m-calendar')
+                                                ->singleCalendar()
+                                                ->suffixIcon('heroicon-m-calendar')
                                                 ->required(),
                                             Forms\Components\TextInput::make('blood_group')
                                                 ->label('Blood Group'),
@@ -102,6 +103,17 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
                                                 ->label('NIC Number'),
                                             Forms\Components\TextInput::make('phone_number')
                                                 ->label('Phone Number'),
+                                            DateRangePicker::make('joining_date')
+                                                ->label('Joining Date')
+                                                ->singleCalendar()
+                                                ->suffixIcon('heroicon-m-calendar')
+                                                ->required(),
+                                            DateRangePicker::make('probation')
+                                                ->label('Probation End Date')
+                                                ->singleCalendar()
+                                                ->suffixIcon('heroicon-m-calendar')
+                                                ->hint('Leave blank if not applicable')
+                                                ->reactive(),
                                             Forms\Components\TextInput::make('emergency_person')
                                                 ->label('Emergency Contact Name'),
                                             Forms\Components\TextInput::make('emergency_contact')
@@ -113,17 +125,7 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
                                                     'single'   => 'Single',
                                                     'married'  => 'Married',
                                                 ]),
-                                            Forms\Components\DatePicker::make('joining_date')
-                                                ->label('Joining Date')
-                                                ->native(false)
-                                                ->prefixIcon('heroicon-m-calendar')
-                                                ->required(),
-                                            Forms\Components\DatePicker::make('probation')
-                                                ->label('Probation End Date')
-                                                ->native(false)
-                                                ->prefixIcon('heroicon-m-calendar')
-                                                ->hint('Leave blank if not applicable')
-                                                ->reactive(),
+
                                             Forms\Components\TextInput::make('designation')
                                                 ->label('Designation')
                                                 ->required(),
@@ -307,11 +309,63 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
                                             ->visible(fn($get) => filled($get('probation'))),
 
                                         Forms\Components\TextInput::make('bank_details.base_salary')
-                                            ->label('Base Salary')
+                                            ->label('Gross Salary')
                                             ->numeric()
                                             ->prefix(fn(callable $get) => $get('bank_details.salary_currency'))
-                                            ->minValue(0),
+                                            ->minValue(0)
+                                            ->reactive()
+                                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                                $percentage = $get('bank_details.statutory_component_percentage');
+                                                if (is_numeric($state) && is_numeric($percentage)) {
+                                                    $divisor = ($percentage + 100) / 100;
+                                                    if ($divisor != 0) {
+                                                        $adjusted_gross = $state / $divisor;
+                                                        $set('bank_details.statutory_component_amount', round($state - $adjusted_gross, 2));
+                                                    }
+                                                }
+                                            }),
                                     ]),
+
+                                    Forms\Components\Fieldset::make('Statutory Component')
+                                        ->schema([
+                                            Forms\Components\Select::make('bank_details.statutory_component_category_id')
+                                                ->label('Component')
+                                                ->options(\App\Models\SalaryComponentCategory::pluck('name', 'id'))
+                                                ->createOptionForm([
+                                                    Forms\Components\TextInput::make('name')
+                                                        ->label('Category Name')
+                                                        ->required()
+                                                        ->unique(table: 'salary_component_categories', column: 'name'),
+                                                    Forms\Components\Hidden::make('team_id')->default(fn() => Filament::getTenant()->id),
+                                                    Forms\Components\Hidden::make('is_default')->default(false),
+                                                ])
+                                                ->createOptionUsing(function (array $data): int {
+                                                    $category = \App\Models\SalaryComponentCategory::create($data);
+                                                    return $category->id;
+                                                })
+                                                ->preload(),
+                                            Forms\Components\TextInput::make('bank_details.statutory_component_percentage')
+                                                ->label('Percentage')
+                                                ->numeric()
+                                                ->suffix('% of gross salary')
+                                                ->reactive()
+                                                ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                                    $grossSalary = $get('bank_details.base_salary');
+                                                    if (is_numeric($grossSalary) && is_numeric($state)) {
+                                                        $divisor = ($state + 100) / 100;
+                                                        if ($divisor != 0) {
+                                                            $adjusted_gross = $grossSalary / $divisor;
+                                                            $set('bank_details.statutory_component_amount', round($grossSalary - $adjusted_gross, 2));
+                                                        }
+                                                    }
+                                                }),
+                                            Forms\Components\TextInput::make('bank_details.statutory_component_amount')
+                                                ->label('Amount')
+                                                ->prefix(fn(callable $get) => $get('bank_details.salary_currency'))
+                                                ->numeric()
+                                                ->disabled()
+                                        ])
+                                        ->columns(3),
 
                                     RadioDeck::make('bank_details.payment_method')
                                         ->label('Payment Method')
@@ -408,9 +462,11 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
                                                 ->label('Resign / Terminate')
                                                 ->helperText('Mark this if the employee has resigned or been terminated')
                                                 ->reactive(),
-                                            Forms\Components\DatePicker::make('resign_date')
+                                            DateRangePicker::make('resign_date')
                                                 ->label('Resignation / Termination Date')
                                                 ->required()
+                                                ->singleCalendar()
+                                                ->suffixIcon('heroicon-m-calendar')
                                                 ->hidden(fn(callable $get) => ! $get('resigned')),
                                         ]),
                                     Forms\Components\Grid::make(1)
@@ -546,21 +602,21 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
     // Authorization Methods
     public static function canViewAny(): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin', 'web') || Auth::user()->can('employees.view')  || Auth::user()->can('employees.manage') || Auth::user()->hasRole('CEO') || Auth::user()->hasRole('Payroll Manager') || Auth::user()->hasRole('AMS Manager'));
+        return Auth::check() && (Auth::user()->hasRole('Admin', 'web') || Auth::user()->can('employees.view')  || Auth::user()->can('employees.manage') || Auth::user()->hasRole('CEO') || Auth::user()->hasRole('AMS Manager'));
     }
 
     public static function canCreate(): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin', 'web') || Auth::user()->can('employees.manage') || Auth::user()->hasRole('CEO') || Auth::user()->hasRole('Payroll Manager') || Auth::user()->hasRole('AMS Manager'));
+        return Auth::check() && (Auth::user()->hasRole('Admin', 'web') || Auth::user()->can('employees.manage') || Auth::user()->hasRole('CEO') || Auth::user()->hasRole('AMS Manager'));
     }
 
     public static function canEdit($record): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin', 'web') || Auth::user()->can('employees.manage') || Auth::user()->hasRole('CEO') || Auth::user()->hasRole('Payroll Manager') || Auth::user()->hasRole('AMS Manager'));
+        return Auth::check() && (Auth::user()->hasRole('Admin', 'web') || Auth::user()->can('employees.manage') || Auth::user()->hasRole('CEO') || Auth::user()->hasRole('AMS Manager'));
     }
 
     public static function canDelete($record): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin', 'web') || Auth::user()->can('employees.manage') || Auth::user()->hasRole('CEO') || Auth::user()->hasRole('Payroll Manager') || Auth::user()->hasRole('AMS Manager'));
+        return Auth::check() && (Auth::user()->hasRole('Admin', 'web') || Auth::user()->can('employees.manage') || Auth::user()->hasRole('CEO') || Auth::user()->hasRole('AMS Manager'));
     }
 }

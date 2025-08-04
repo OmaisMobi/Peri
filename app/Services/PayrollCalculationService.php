@@ -45,6 +45,7 @@ class PayrollCalculationService
         string $configPenaltyTaxStatus = 'non-taxable'
     ): array {
         $user = Filament::getTenant()->users()->with(['assignedDepartment.department', 'assignedShift.shift'])->where('id', $userId)->first();
+        $userBankDetail = $user->bankDetails->first();
         $teamId = Filament::getTenant()->id;
 
         if ($teamId === null || !is_int($teamId)) {
@@ -65,6 +66,8 @@ class PayrollCalculationService
             $incrementAmountAppliedThisRun = $actual_increment;
         }
 
+        $baseSalaryForCalculations = $currentPeriodBaseSalary - ($userBankDetail->statutory_component_amount ?? 0);
+
         $workingData = $this->calculateWorkingDays($periodStartDate, $periodEndDate, $user);
         $totalDaysInPeriod = $periodStartDate->diffInDays($periodEndDate) + 1;
 
@@ -77,7 +80,7 @@ class PayrollCalculationService
 
         $financialRates = $this->calculateFinancialRates(
             $user,
-            $currentPeriodBaseSalary,
+            $baseSalaryForCalculations,
             $workingData['workingDays']
         );
         $perDayRate = $financialRates['per_day_rate'];
@@ -93,7 +96,7 @@ class PayrollCalculationService
 
         $processedComponents = $this->processSalaryComponents(
             $user,
-            $currentPeriodBaseSalary,
+            $baseSalaryForCalculations,
             $customEarningsInput,
             $customDeductionsInput,
             $periodStartDate
@@ -101,7 +104,7 @@ class PayrollCalculationService
         $totalCustomTaxableEarnings = $processedComponents['total_taxable_earnings'];
         $totalCustomNonTaxableEarnings = $processedComponents['total_non_taxable_earnings'];
         $totalCustomTaxableDeductions = $processedComponents['total_taxable_deductions'];
-        $totalCustomNonTaxableDeductions = 0.0;
+        $totalCustomNonTaxableDeductions = $processedComponents['total_non_taxable_deductions'];
 
         $attendancePenaltiesValue = 0.0;
         if ($configDeductLatePenalties) $attendancePenaltiesValue += $attendanceFinancialImpacts['late_deduction_amount'];
@@ -112,7 +115,12 @@ class PayrollCalculationService
 
         $totalTaxableEarnings = $totalCustomTaxableEarnings + ($configPenaltyTaxStatus === 'taxable' ? $attendanceEarningsValue : 0.0);
         $totalTaxableDeductions = $totalCustomTaxableDeductions + ($configPenaltyTaxStatus === 'taxable' ? $attendancePenaltiesValue : 0.0);
+        $userBankDetail = $user->bankDetails->first();
         $totalNonTaxableEarnings = $totalCustomNonTaxableEarnings + ($configPenaltyTaxStatus === 'non-taxable' ? $attendanceEarningsValue : 0.0);
+        if ($userBankDetail && $userBankDetail->statutory_component_amount) {
+            $totalNonTaxableEarnings += $userBankDetail->statutory_component_amount;
+        }
+
         $totalNonTaxableDeductions = $totalCustomNonTaxableDeductions + ($configPenaltyTaxStatus === 'non-taxable' ? $attendancePenaltiesValue : 0.0);
 
         $loanDeductions = $this->processLoanDeductions($user, $periodStartDate);
@@ -121,7 +129,7 @@ class PayrollCalculationService
         $taxData = $this->calculateTax(
             $user,
             $teamId,
-            $currentPeriodBaseSalary,
+            $baseSalaryForCalculations,
             $totalTaxableEarnings,
             $totalTaxableDeductions,
             $effectiveMonthIndicator,
@@ -605,7 +613,11 @@ class PayrollCalculationService
                     'id' => $component->id,
                     'is_one_time_deduction' => (bool)$component->is_one_time_deduction
                 ];
-                $totals['total_taxable_deductions'] += $calculatedAmount;
+                if ($component->tax_status === 'taxable') {
+                    $totals['total_taxable_deductions'] += $calculatedAmount;
+                } else {
+                    $totals['total_non_taxable_deductions'] += $calculatedAmount;
+                }
             }
         }
 
@@ -633,7 +645,7 @@ class PayrollCalculationService
         int $effectiveMonthIndicatorForCurrentRun,
         Carbon $currentRunStartDate
     ): array {
-        $monthlyTaxableBaseForCurrentPeriod = $currentPeriodBaseSalary + $totalTaxableEarningsForCurrentPeriod - $totalTaxableDeductionsForCurrentPeriod;
+        $monthlyTaxableBaseForCurrentPeriod = $currentPeriodBaseSalary + $totalTaxableEarningsForCurrentPeriod;
 
         $companyDetails = Team::where('id', $teamId)->first();
         $companyCountry = $companyDetails ? $companyDetails->country_id : null;
@@ -707,6 +719,7 @@ class PayrollCalculationService
         }
 
         $projectedAnnualSalary = ($monthlyTaxableBaseForCurrentPeriod * $multiplier) + $previousMonthsTaxableBaseSum;
+        $projectedAnnualSalary -= $totalTaxableDeductionsForCurrentPeriod;
 
         $totalAnnualTax = 0.0;
         $monthlyTaxCalculated = 0.0;
@@ -829,6 +842,9 @@ class PayrollCalculationService
             $baseSalary += $appliedIncrementAmount;
         }
 
+        $userBankDetail = $user->bankDetails->first();
+        $baseSalaryForRecalculationCalculations = $baseSalary - ($userBankDetail->statutory_component_amount ?? 0);
+
         $customEarningsApplied = [];
         $adHocEarningsCalculated = [];
         $customDeductionsApplied = [];
@@ -848,7 +864,7 @@ class PayrollCalculationService
             if ($component) {
                 $inputAmountForCalculation = (float)($earningInput['amount_input'] ?? $component->amount);
                 $calculatedAmount = round($component->value_type === 'percentage'
-                    ? ($baseSalary * ($inputAmountForCalculation / 100))
+                    ? ($baseSalaryForRecalculationCalculations * ($inputAmountForCalculation / 100))
                     : $inputAmountForCalculation);
 
                 $customEarningsApplied[] = [
@@ -872,7 +888,7 @@ class PayrollCalculationService
         foreach ($adHocEarningsInput as $adHocEarning) {
             $amount = (float)($adHocEarning['amount_input'] ?? 0);
             $adHocEarning['value_type'] = $adHocEarning['value_type'] ?? 'number';
-            $calculatedAmount = round($adHocEarning['value_type'] === 'percentage' ? ($baseSalary * ($amount / 100)) : $amount);
+            $calculatedAmount = round($adHocEarning['value_type'] === 'percentage' ? ($baseSalaryForRecalculationCalculations * ($amount / 100)) : $amount);
             $adHocEarningsCalculated[] = [
                 'id' => $adHocEarning['id'] ?? uniqid('adhoc_earning_'),
                 'name' => Str::slug($adHocEarning['title']),
@@ -905,7 +921,7 @@ class PayrollCalculationService
 
                 $inputAmountForCalculation = (float)($deductionInput['amount_input'] ?? $component->amount);
                 $calculatedAmount = round($component->value_type === 'percentage'
-                    ? ($baseSalary * ($inputAmountForCalculation / 100))
+                    ? ($baseSalaryForRecalculationCalculations * ($inputAmountForCalculation / 100))
                     : $inputAmountForCalculation);
                 $customDeductionsApplied[] = [
                     'id' => $component->id,
@@ -928,7 +944,7 @@ class PayrollCalculationService
 
         foreach ($adHocDeductionsInput as $adHocDeduction) {
             $amount = (float)($adHocDeduction['amount_input'] ?? 0);
-            $calculatedAmount = $adHocDeduction['value_type'] === 'percentage' ? ($baseSalary * ($amount / 100)) : $amount;
+            $calculatedAmount = $adHocDeduction['value_type'] === 'percentage' ? ($baseSalaryForRecalculationCalculations * ($amount / 100)) : $amount;
             $adHocDeductionsCalculated[] = [
                 'id' => uniqid('adhoc_deduction_'),
                 'name' => Str::slug($adHocDeduction['title']),
@@ -1020,7 +1036,7 @@ class PayrollCalculationService
         $taxData = $this->calculateTax(
             $user,
             Filament::getTenant()->id,
-            $baseSalary,
+            $baseSalaryForRecalculationCalculations,
             $totalTaxableEarnings,
             $totalTaxableDeductions,
             $payroll->month_indicator,
