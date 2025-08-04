@@ -18,6 +18,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Support\Facades\Auth;
 use Guava\FilamentKnowledgeBase\Contracts\HasKnowledgeBase;
 use Guava\FilamentKnowledgeBase\Facades\KnowledgeBase;
+use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
 
 class HolidayResource extends Resource implements HasKnowledgeBase
 {
@@ -70,19 +71,19 @@ class HolidayResource extends Resource implements HasKnowledgeBase
                                         'xl' => 12,
                                         '2xl' => 12,
                                     ]),
-                                DatePicker::make('starting_date')
+                                DateRangePicker::make('starting_date')
                                     ->required()
-                                    ->native(false)
-                                    ->prefixIcon('heroicon-m-calendar')
+                                    ->singleCalendar()
+                                    ->suffixIcon('heroicon-m-calendar')
                                     ->columnSpan([
                                         'sm' => 12,
                                         'xl' => 6,
                                         '2xl' => 6,
                                     ]),
-                                DatePicker::make('ending_date')
+                                DateRangePicker::make('ending_date')
                                     ->required()
-                                    ->native(false)
-                                    ->prefixIcon('heroicon-m-calendar')
+                                    ->singleCalendar()
+                                    ->suffixIcon('heroicon-m-calendar')
                                     ->afterOrEqual('starting_date')
                                     ->columnSpan([
                                         'sm' => 12,

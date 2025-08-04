@@ -385,3 +385,15 @@ body {
 .dark .warning-text {
     color: theme("colors.amber.200") !important;
 }
+
+.fi-resource-leaves .fi-ta-filters-above-content-ctn {
+    @apply !bg-white;
+}
+
+.fi-resource-leaves .fi-ta-header-toolbar .ms-auto.flex {
+    @apply !justify-between;
+}
+
+.fi-ta-header-toolbar .ms-auto.flex > :nth-child(3) {
+    margin-left: auto;
+}

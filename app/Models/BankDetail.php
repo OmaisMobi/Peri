@@ -15,7 +15,10 @@ class BankDetail extends Model
         'account_number',
         'account_holder_name',
         'bank_name',
-        'salary_currency'
+        'salary_currency',
+        'statutory_component_category_id',
+        'statutory_component_percentage',
+        'statutory_component_amount'
     ];
 
     public function user()

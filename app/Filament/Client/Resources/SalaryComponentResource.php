@@ -105,7 +105,7 @@ class SalaryComponentResource extends Resource implements HasKnowledgeBase
                                                     ->label('Calculation Type')
                                                     ->options([
                                                         'number' => 'Fixed Amount',
-                                                        'percentage' => 'Percentage of Base Salary',
+                                                        'percentage' => 'Percentage of Gross Salary',
                                                     ])
                                                     ->required()
                                                     ->live()
@@ -123,14 +123,8 @@ class SalaryComponentResource extends Resource implements HasKnowledgeBase
                                                     ->columnSpan('full'),
                                                 Forms\Components\Checkbox::make('tax_status')
                                                     ->label('Mark as taxable')
-                                                    ->hidden(fn(Get $get): bool => $get('component_type') === 'deduction')
                                                     ->formatStateUsing(fn(?string $state): bool => $state === 'taxable')
-                                                    ->dehydrateStateUsing(function ($state, Get $get): string {
-                                                        if ($get('component_type') === 'deduction') {
-                                                            return 'non-taxable';
-                                                        }
-                                                        return $state ? 'taxable' : 'non-taxable';
-                                                    })
+                                                    ->dehydrateStateUsing(fn(bool $state): string => $state ? 'taxable' : 'non-taxable')
                                                     ->default(true),
                                             ])->columnSpan(1),
 

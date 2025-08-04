@@ -17,8 +17,25 @@ class CreateEmployee extends CreateRecord
 
     protected function afterCreate(): void
     {
-        $role = Role::find($this->data["role"]);
-        $this->record->syncRoles($role);
+        $roles = [];
+        if (isset($this->data['role'])) {
+            $roles[] = Role::find($this->data['role']);
+        }
+
+        $allEmployeesRole = Role::where('assignment', 'all')
+                                ->where('team_id', Filament::getTenant()->id)
+                                ->first();
+
+        if ($allEmployeesRole) {
+            $roles[] = $allEmployeesRole;
+        }
+
+        // Filter out nulls and get unique roles
+        $uniqueRoles = collect($roles)->filter()->unique('id');
+
+        if ($uniqueRoles->isNotEmpty()) {
+            $this->record->syncRoles($uniqueRoles);
+        }
 
         $tenant = Filament::getTenant();
 

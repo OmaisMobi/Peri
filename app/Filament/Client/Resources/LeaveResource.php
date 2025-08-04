@@ -23,9 +23,11 @@ use Illuminate\Support\Facades\DB;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use Illuminate\Validation\ValidationException;
 use Filament\Forms\Get;
+use Filament\Tables\Enums\FiltersLayout;
 use Illuminate\Support\Str;
 use Guava\FilamentKnowledgeBase\Contracts\HasKnowledgeBase;
 use Guava\FilamentKnowledgeBase\Facades\KnowledgeBase;
+use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
 
 class LeaveResource extends Resource implements HasKnowledgeBase
 {
@@ -396,12 +398,12 @@ class LeaveResource extends Resource implements HasKnowledgeBase
                                     // Regular Leave Fields
                                     Forms\Components\Grid::make()
                                         ->schema([
-                                            Forms\Components\DatePicker::make('starting_date')
+                                            DateRangePicker::make('starting_date')
                                                 ->required()
                                                 ->reactive()
                                                 ->label('Starting Date')
-                                                ->native(false)
-                                                ->prefixIcon('heroicon-m-calendar')
+                                                ->singleCalendar()
+                                                ->suffixIcon('heroicon-m-calendar')
                                                 ->minDate(function () {
                                                     $user = Auth::user();
                                                     $user->loadMissing('assignedShift.shift', 'assignedDepartment.department');
@@ -411,12 +413,12 @@ class LeaveResource extends Resource implements HasKnowledgeBase
                                                     return null;
                                                 }),
 
-                                            Forms\Components\DatePicker::make('ending_date')
+                                            DateRangePicker::make('ending_date')
                                                 ->required()
                                                 ->label('Ending Date')
                                                 ->afterOrEqual('starting_date')
-                                                ->native(false)
-                                                ->prefixIcon('heroicon-m-calendar')
+                                                ->singleCalendar()
+                                                ->suffixIcon('heroicon-m-calendar')
                                                 ->minDate(function () {
                                                     $user = Auth::user();
                                                     $user->loadMissing('assignedShift.shift', 'assignedDepartment.department');
@@ -537,11 +539,11 @@ class LeaveResource extends Resource implements HasKnowledgeBase
                                     // Half Day Fields
                                     Forms\Components\Grid::make()
                                         ->schema([
-                                            Forms\Components\DatePicker::make('starting_date')
+                                            DateRangePicker::make('starting_date')
                                                 ->required()
                                                 ->label('Date')
-                                                ->native(false)
-                                                ->prefixIcon('heroicon-m-calendar')
+                                                ->singleCalendar()
+                                                ->suffixIcon('heroicon-m-calendar')
                                                 ->minDate(function () {
                                                     $user = Auth::user();
                                                     if ($user && $user->joining_date) {
@@ -566,11 +568,11 @@ class LeaveResource extends Resource implements HasKnowledgeBase
                                     // Short Leave Fields
                                     Forms\Components\Grid::make()
                                         ->schema([
-                                            Forms\Components\DatePicker::make('starting_date')
+                                            DateRangePicker::make('starting_date')
                                                 ->required()
                                                 ->label('Date')
-                                                ->native(false)
-                                                ->prefixIcon('heroicon-m-calendar')
+                                                ->singleCalendar()
+                                                ->suffixIcon('heroicon-m-calendar')
                                                 ->minDate(function () {
                                                     $user = Auth::user();
                                                     if ($user && $user->joining_date) {
@@ -1210,11 +1212,17 @@ class LeaveResource extends Resource implements HasKnowledgeBase
                     ->endDate(Carbon::now())
                     ->maxDate(Carbon::now()),
                 Tables\Filters\SelectFilter::make('type')
-                    ->label('Leave Type')
+                    ->label('Type')
                     ->options([
                         'regular' => 'Regular Leave',
                         'half_day' => 'Half Day',
                         'short_leave' => 'Short Leave',
+                    ]),
+                Tables\Filters\SelectFilter::make('paid')
+                    ->label('Payment')
+                    ->options([
+                        1 => 'Paid',
+                        0 => 'Unpaid',
                     ]),
                 Tables\Filters\SelectFilter::make('status')
                     ->label('Status')
@@ -1224,22 +1232,16 @@ class LeaveResource extends Resource implements HasKnowledgeBase
                         'rejected' => 'Rejected',
                         'pending_cancellation' => 'Pending Cancellation',
                     ]),
-                Tables\Filters\SelectFilter::make('paid')
-                    ->label('Payment Status')
-                    ->options([
-                        1 => 'Paid',
-                        0 => 'Unpaid',
-                    ]),
 
-            ])
+            ], layout: FiltersLayout::AboveContentCollapsible)
             ->defaultSort('created_at', 'desc')
             ->actions([
                 Tables\Actions\ViewAction::make()
-                    ->url(fn (Leave $record): string => static::getUrl('edit', ['record' => $record]))
+                    ->url(fn(Leave $record): string => static::getUrl('edit', ['record' => $record]))
                     ->openUrlInNewTab()
                     ->visible(fn($record) => in_array($record->status, ['cancelled', 'approved', 'rejected'])),
                 Tables\Actions\EditAction::make()
-                    ->url(fn (Leave $record): string => static::getUrl('edit', ['record' => $record]))
+                    ->url(fn(Leave $record): string => static::getUrl('edit', ['record' => $record]))
                     ->openUrlInNewTab()
                     ->visible(fn($record) => in_array($record->status, ['pending', 'forwarded'])),
                 Tables\Actions\Action::make('approve')
