@@ -249,9 +249,9 @@
                         @endforeach
                     @endif
                     @if (!empty($nonTaxableEarnings))
-                        <tr>
+                        {{-- <tr>
                             <td colspan="2"><strong>Non-Taxable Earnings</strong></td>
-                        </tr>
+                        </tr> --}}
                         @foreach ($nonTaxableEarnings as $earning)
                             <tr>
                                 <td>{{ $earning['title'] }}</td>

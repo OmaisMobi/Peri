@@ -26,7 +26,7 @@ class PayrollsRelationManager extends RelationManager
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')->label('Employee')->searchable(),
-                Tables\Columns\TextColumn::make('base_salary')->label('Base Salary')->formatStateUsing(fn($state) => $currency . ' ' . number_format($state ?? 0)),
+                Tables\Columns\TextColumn::make('base_salary')->label('Gross Salary')->formatStateUsing(fn($state) => $currency . ' ' . number_format($state ?? 0)),
                 Tables\Columns\TextColumn::make('total_earnings')->label('Earnings')->formatStateUsing(fn($state) => $currency . ' ' . number_format($state ?? 0)),
                 Tables\Columns\TextColumn::make('total_deductions')->label('Deductions')->formatStateUsing(fn($state) => $currency . ' ' . number_format($state ?? 0)),
                 Tables\Columns\TextColumn::make('tax_data.monthly_tax_calculated')->label('Tax')->formatStateUsing(fn($state) => $currency . ' ' . number_format($state ?? 0)),

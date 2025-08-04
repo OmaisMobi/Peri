@@ -60,6 +60,14 @@ class SalaryComponentResource extends Resource implements HasKnowledgeBase
                                     ->schema([
                                         Forms\Components\Group::make()
                                             ->schema([
+                                                Forms\Components\Select::make('component_type')
+                                                    ->label('Component Type')
+                                                    ->options([
+                                                        'earning' => 'Earning',
+                                                        'deduction' => 'Deduction',
+                                                    ])
+                                                    ->required()
+                                                    ->live(),
                                                 Select::make('salary_component_category_id')
                                                     ->label('Category')
                                                     ->relationship('category', 'name', function ($query) use ($team_id) {
@@ -78,28 +86,9 @@ class SalaryComponentResource extends Resource implements HasKnowledgeBase
                                                     ])
                                                     ->preload()
                                                     ->required(),
-                                                Forms\Components\Select::make('component_type')
-                                                    ->label('Component Type')
-                                                    ->options([
-                                                        'earning' => 'Earning',
-                                                        'deduction' => 'Deduction',
-                                                    ])
-                                                    ->required()
-                                                    ->live(),
-                                                Forms\Components\TextInput::make('name')
+                                                Forms\Components\TextInput::make('title')
                                                     ->label('Title')
                                                     ->required()
-                                                    ->hintIcon('heroicon-m-question-mark-circle', tooltip: 'A unique name to identify this component.')
-                                                    ->maxLength(40)
-                                                    ->rule(function ($record) {
-                                                        return Rule::unique('salary_components', 'name')
-                                                            ->where('team_id', Filament::getTenant()->id)
-                                                            ->ignore($record?->id);
-                                                    }),
-                                                Forms\Components\TextInput::make('title')
-                                                    ->label('Title on Payslip')
-                                                    ->required()
-                                                    ->hintIcon('heroicon-m-question-mark-circle', tooltip: 'This name will be displayed on the payslip.')
                                                     ->maxLength(40),
                                                 Forms\Components\Radio::make('value_type')
                                                     ->label('Calculation Type')
@@ -162,7 +151,7 @@ class SalaryComponentResource extends Resource implements HasKnowledgeBase
 
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                Tables\Columns\TextColumn::make('title')
                     ->label('Title')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('category.name')
