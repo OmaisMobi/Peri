@@ -26,6 +26,7 @@ use Filament\Tables\Enums\FiltersLayout;
 use Illuminate\Support\Str;
 use Guava\FilamentKnowledgeBase\Contracts\HasKnowledgeBase;
 use Guava\FilamentKnowledgeBase\Facades\KnowledgeBase;
+use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class LeaveResource extends Resource implements HasKnowledgeBase
 {
@@ -1203,7 +1204,7 @@ class LeaveResource extends Resource implements HasKnowledgeBase
             ])
             ->searchPlaceholder('Search Employee')
             ->filters([
-                Forms\Components\DatePicker::make('created_at')
+                DateRangeFilter::make('created_at')
                     ->label('Date')
                     ->icon('heroicon-o-arrow-path')
                     ->startDate(Carbon::now()->startOfMonth())
