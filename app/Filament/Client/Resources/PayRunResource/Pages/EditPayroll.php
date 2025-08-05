@@ -161,49 +161,77 @@ class EditPayroll extends Page
         return $form
             ->schema([
                 Section::make('')
-                    ->columns(2)
+                    ->columns(3) // 3 column grid
                     ->schema([
-                        Forms\Components\Placeholder::make('base_salary')
-                            ->label('Base Salary')
-                            ->content(fn() => $currency . ' ' . number_format($this->payroll?->base_salary ?? 0)),
+                        Forms\Components\Fieldset::make('Salary Breakdown')
+                            ->schema([
+                                Grid::make(3)->schema([
+                                    Forms\Components\Placeholder::make('gross_salary')
+                                        ->label('Gross Salary')
+                                        ->content(fn() => $currency . ' ' . number_format($this->payroll?->base_salary ?? 0)),
+                                    Forms\Components\Placeholder::make('statutory_component')
+                                        ->label('Statutory Amount')
+                                        ->content(function () use ($currency) {
+                                            $user = $this->payroll?->user;
+                                            $statutoryPercentage = $user->bankDetails->first()->statutory_component_amount ?? 0;
+                                            return $currency . ' ' . number_format($statutoryPercentage);
+                                        }),
+                                    Forms\Components\Placeholder::make('base_salary')
+                                        ->label('Base Salary')
+                                        ->content(function () use ($currency) {
+                                            $grossSalary = $this->payroll?->base_salary ?? 0;
+                                            $user = $this->payroll?->user;
+                                            $statutoryPercentage = $user->bankDetails->first()->statutory_component_amount ?? 0;
+                                            if ($user && $user->bankDetails->first()) {
+                                                $statutoryPercentage = $user->bankDetails->first()->statutory_component_amount ?? 0;
+                                            }
+                                            $statutoryAmount = 0;
+                                            $statutoryAmount = $grossSalary - $statutoryPercentage;
+                                            return $currency . ' ' . number_format($statutoryAmount);
+                                        }),
+                                ])
+                            ])->columnSpan(2),
 
                         // -- Increment Logic --
-                        Grid::make(3)->schema([
-                            Forms\Components\Toggle::make('apply_increment')
-                                ->label('Apply Increment')
-                                ->offIcon('heroicon-s-x-mark')
-                                ->onIcon('heroicon-s-check')
-                                ->disabled(fn() => isset($this->payroll) && $this->payroll->applied_increment_amount > 0)
-                                ->reactive(),
+                        Forms\Components\Fieldset::make('Increment')
+                            ->schema([
+                                Grid::make(3)->schema([
+                                    Forms\Components\Checkbox::make('apply_increment')
+                                        ->label('Apply')
+                                        ->disabled(fn() => isset($this->payroll) && $this->payroll->applied_increment_amount > 0)
+                                        ->reactive(),
 
-                            Forms\Components\Select::make('increment_type')
-                                ->label('Type')
-                                ->options([
-                                    'number' => 'Fixed Amount',
-                                    'percentage' => 'Percentage of Base Salary',
+                                    Forms\Components\Select::make('increment_type')
+                                        ->label('Type')
+                                        ->options([
+                                            'number' => 'Fixed Amount',
+                                            'percentage' => 'Percentage of Gross Salary',
+                                        ])
+                                        ->disabled(fn($get) => !$get('apply_increment') && !(
+                                            isset($this->payroll) && $this->payroll->applied_increment_amount > 0
+                                        ))
+                                        ->required(fn($get) => $get('apply_increment'))
+                                        ->reactive(),
+
+                                    Forms\Components\TextInput::make('increment_value')
+                                        ->label('Amount')
+                                        ->numeric()
+                                        ->minValue(0)
+                                        ->prefix(function ($get) use ($currency) {
+                                            $isIncrementApplied = isset($this->payroll) && $this->payroll->applied_increment_amount > 0;
+                                            $type = $get('increment_type');
+
+                                            return $isIncrementApplied ? $currency . ' ' : (
+                                                $type === 'number' ? $currency . ' ' : ($type === 'percentage' ? '% ' : null)
+                                            );
+                                        })
+                                        ->disabled(fn($get) => !$get('apply_increment') && !(
+                                            isset($this->payroll) && $this->payroll->applied_increment_amount > 0
+                                        ))
+                                        ->reactive(),
                                 ])
-                                ->visible(fn($get) => $get('apply_increment') && !(
-                                    isset($this->payroll) && $this->payroll->applied_increment_amount > 0
-                                ))
-                                ->required(fn($get) => $get('apply_increment'))
-                                ->reactive(),
+                            ])->columnSpan(2), // Takes 2 columns
 
-                            Forms\Components\TextInput::make('increment_value')
-                                ->label('Amount')
-                                ->numeric()
-                                ->minValue(0)
-                                ->prefix(function ($get) use ($currency) {
-                                    $isIncrementApplied = isset($this->payroll) && $this->payroll->applied_increment_amount > 0;
-                                    $type = $get('increment_type');
-
-                                    return $isIncrementApplied ? $currency . ' ' : (
-                                        $type === 'number' ? $currency . ' ' : ($type === 'percentage' ? '% ' : null)
-                                    );
-                                })
-                                ->visible(fn($get) => $get('apply_increment'))
-                                ->disabled(fn() => isset($this->payroll) && $this->payroll->applied_increment_amount > 0)
-                                ->reactive(),
-                        ])->columnSpanFull(),
                         Forms\Components\Fieldset::make('Fund Earnings')
                             ->label('Fund Reimbursement')
                             ->schema(
@@ -236,117 +264,132 @@ class EditPayroll extends Page
                                 })->toArray()
                             )
                             ->columns(3)
-                            ->visible(fn() => $this->checkFunds()),
+                            ->visible(fn() => $this->checkFunds())
+                            ->columnSpan(2), // Takes 2 columns
 
-                        Repeater::make('earnings')
-                            ->label('Earnings')
-                            ->columnSpanFull()
+                        Forms\Components\Fieldset::make('Earnings')
                             ->schema([
-                                Forms\Components\Hidden::make('id'),
-                                Forms\Components\TextInput::make('title')->disabled(),
-                                Forms\Components\TextInput::make('amount')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->required()
-                                    ->prefix(fn(callable $get) => $get('value_type') === 'percentage' ? '% ' : $currency . ' ')
-                                    ->reactive(),
-                            ])->columns(2)->addable(false)->deletable(false)->reorderable(false),
-
-                        Forms\Components\Repeater::make('ad_hoc_earnings')
-                            ->label('')
-                            ->columnSpanFull()
-                            ->schema([
-                                Forms\Components\Hidden::make('id')->default(uniqid('adhoc_earning_custom_id')),
-                                Forms\Components\TextInput::make('title')
-                                    ->required()
-                                    ->reactive()
-                                    ->readOnly(fn(callable $get) => str($get('id'))->startsWith('adhoc_earning_fund_id')),
-
-
-                                Forms\Components\Select::make('value_type')
-                                    ->label('Type')
-                                    ->options([
-                                        'number' => 'Fixed Amount',
-                                        'percentage' => 'Percentage',
+                                Repeater::make('earnings')
+                                    ->label(false)
+                                    ->schema([
+                                        Forms\Components\Hidden::make('id'),
+                                        Forms\Components\TextInput::make('title')->disabled(),
+                                        Forms\Components\TextInput::make('amount')
+                                            ->numeric()
+                                            ->minValue(0)
+                                            ->required()
+                                            ->prefix(fn(callable $get) => $get('value_type') === 'percentage' ? '% ' : $currency . ' ')
+                                            ->reactive(),
                                     ])
-                                    ->default('number')
-                                    ->required()
-                                    ->reactive()
-                                    ->disabled(fn(callable $get) => str($get('id'))->startsWith('adhoc_earning_fund_id')),
+                                    ->columns(2)
+                                    ->addable(false)
+                                    ->deletable(false)
+                                    ->reorderable(false)
+                                    ->columnSpan(2), // Takes 2 columns
 
-                                Forms\Components\TextInput::make('amount_input')
-                                    ->label('Amount')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->required()
-                                    ->reactive()
-                                    ->readOnly(fn(callable $get) => str($get('id'))->startsWith('adhoc_earning_fund_id')),
+                                Forms\Components\Repeater::make('ad_hoc_earnings')
+                                    ->label('')
+                                    ->schema([
+                                        Forms\Components\Hidden::make('id')->default(uniqid('adhoc_earning_custom_id')),
+                                        Forms\Components\TextInput::make('title')
+                                            ->required()
+                                            ->reactive()
+                                            ->readOnly(fn(callable $get) => str($get('id'))->startsWith('adhoc_earning_fund_id')),
 
-                                Forms\Components\Select::make('tax_status')
-                                    ->label('Tax Status')
-                                    ->options([
-                                        'taxable' => 'Taxable',
-                                        'non-taxable' => 'Non-Taxable',
+                                        Forms\Components\Select::make('value_type')
+                                            ->label('Type')
+                                            ->options([
+                                                'number' => 'Fixed Amount',
+                                                'percentage' => 'Percentage',
+                                            ])
+                                            ->default('number')
+                                            ->required()
+                                            ->reactive()
+                                            ->disabled(fn(callable $get) => str($get('id'))->startsWith('adhoc_earning_fund_id')),
+
+                                        Forms\Components\TextInput::make('amount_input')
+                                            ->label('Amount')
+                                            ->numeric()
+                                            ->minValue(0)
+                                            ->required()
+                                            ->reactive()
+                                            ->readOnly(fn(callable $get) => str($get('id'))->startsWith('adhoc_earning_fund_id')),
+
+                                        Forms\Components\Select::make('tax_status')
+                                            ->label('Tax Status')
+                                            ->options([
+                                                'taxable' => 'Taxable',
+                                                'non-taxable' => 'Non-Taxable',
+                                            ])
+                                            ->required()
+                                            ->default('taxable')
+                                            ->columnSpan(1),
                                     ])
-                                    ->required()
-                                    ->default('taxable')
-                                    ->columnSpan(1),
-                            ])
-                            ->columns(4)
-                            ->reorderable(false)
-                            ->addActionLabel('Add One-Time Earning'),
+                                    ->columns(4)
+                                    ->reorderable(false)
+                                    ->addActionLabel('+ Add an Earning')
+                                    ->columnSpan(2), // Takes 2 columns
+                            ])->columnSpan(2),
 
                         // -- Deductions --
-
-
-                        Repeater::make('deductions')
-                            ->label('Deductions')
-                            ->columnSpanFull()
+                        Forms\Components\Fieldset::make('Deductions')
                             ->schema([
-                                Forms\Components\Hidden::make('id')->reactive(),
-                                Forms\Components\TextInput::make('title')->disabled(),
-                                Forms\Components\TextInput::make('amount')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->required()
-                                    ->prefix(fn(callable $get) => $get('value_type') === 'percentage' ? '% ' : $currency . ' ')
-                                    ->reactive(),
-                            ])->columns(2)->addable(false)->deletable(false)->reorderable(false),
-
-                        Repeater::make('ad_hoc_deductions')
-                            ->label('')
-                            ->columnSpanFull()
-                            ->schema([
-                                Forms\Components\TextInput::make('title')->required(),
-                                Forms\Components\Select::make('value_type')
-                                    ->label('Type')
-                                    ->options([
-                                        'number' => 'Fixed Amount',
-                                        'percentage' => 'Percentage',
+                                Repeater::make('deductions')
+                                    ->label(false)
+                                    ->schema([
+                                        Forms\Components\Hidden::make('id')->reactive(),
+                                        Forms\Components\TextInput::make('title')->disabled(),
+                                        Forms\Components\TextInput::make('amount')
+                                            ->numeric()
+                                            ->minValue(0)
+                                            ->required()
+                                            ->prefix(fn(callable $get) => $get('value_type') === 'percentage' ? '% ' : $currency . ' ')
+                                            ->reactive(),
                                     ])
-                                    ->default('number')
-                                    ->required()
-                                    ->reactive(),
+                                    ->columns(2)
+                                    ->addable(false)
+                                    ->deletable(false)
+                                    ->reorderable(false)
+                                    ->columnSpan(2), // Takes 2 columns
 
-                                Forms\Components\TextInput::make('amount_input')
-                                    ->label('Amount')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->required()
-                                    ->prefix(function (callable $get) use ($currency) {
-                                        return $get('value_type') === 'percentage' ? '%' : $currency;
-                                    })
-                                    ->reactive(),
-                            ])->columns(3)->reorderable(false)->addActionLabel('Add One-Time Deduction'),
+                                Repeater::make('ad_hoc_deductions')
+                                    ->label('')
+                                    ->schema([
+                                        Forms\Components\TextInput::make('title')->required(),
+                                        Forms\Components\Select::make('value_type')
+                                            ->label('Type')
+                                            ->options([
+                                                'number' => 'Fixed Amount',
+                                                'percentage' => 'Percentage',
+                                            ])
+                                            ->default('number')
+                                            ->required()
+                                            ->reactive(),
+
+                                        Forms\Components\TextInput::make('amount_input')
+                                            ->label('Amount')
+                                            ->numeric()
+                                            ->minValue(0)
+                                            ->required()
+                                            ->prefix(function (callable $get) use ($currency) {
+                                                return $get('value_type') === 'percentage' ? '%' : $currency;
+                                            })
+                                            ->reactive(),
+                                    ])
+                                    ->columns(3)
+                                    ->reorderable(false)
+                                    ->addActionLabel('+ Add a Deduction')
+                                    ->columnSpan(2), // Takes 2 columns
+                            ])->columnSpan(2),
 
                         // -- Attendance Adjustments --
                         Forms\Components\Fieldset::make('Attendance Adjustments')
-                            ->columnSpanFull()
                             ->schema([
                                 Forms\Components\TextInput::make('overtime_earning_amount')
                                     ->label('Overtime Earning')
                                     ->numeric()
                                     ->disabled()
+                                    ->prefix(fn($state) => $currency . ' ')
                                     ->formatStateUsing(fn($state) => round($state)),
 
                                 Forms\Components\Toggle::make('apply_overtime_earnings')->label('Apply'),
@@ -355,6 +398,7 @@ class EditPayroll extends Page
                                     ->label('Late Deduction')
                                     ->numeric()
                                     ->disabled()
+                                    ->prefix(fn($state) => $currency . ' ')
                                     ->formatStateUsing(fn($state) => round($state)),
 
                                 Forms\Components\Toggle::make('deduct_late_penalties')->label('Apply'),
@@ -363,19 +407,20 @@ class EditPayroll extends Page
                                     ->label('Absent Deduction')
                                     ->numeric()
                                     ->disabled()
+                                    ->prefix(fn($state) => $currency . ' ')
                                     ->formatStateUsing(fn($state) => round($state)),
 
                                 Forms\Components\Toggle::make('deduct_absent_penalties')->label('Apply'),
                             ])
-                            ->columns(2),
-                        // -- Attendance Adjustments --
+                            ->columns(2)
+                            ->columnSpan(2), // Takes 2 columns
+
+                        // -- Fund Section --
                         Forms\Components\Fieldset::make('Fund')
                             ->label('Active Funds')
-                            ->columnSpanFull()
                             ->schema([
                                 Repeater::make('fund_data')
                                     ->label('')
-                                    ->columnSpanFull()
                                     ->schema([
                                         Forms\Components\TextInput::make('amount_input')
                                             ->label(fn(callable $get) => $get('title') ?: 'Amount')
@@ -384,8 +429,15 @@ class EditPayroll extends Page
                                             ->required()
                                             ->reactive()
                                             ->disabled(),
-                                    ])->columns(2)->addable(false)->deletable(false)->reorderable(false),
-                            ])->columns(2)->visible(fn() => $this->checkFunds()),
+                                    ])
+                                    ->columns(2)
+                                    ->addable(false)
+                                    ->deletable(false)
+                                    ->reorderable(false),
+                            ])
+                            ->columns(2)
+                            ->visible(fn() => $this->checkFunds())
+                            ->columnSpan(2), // Takes 2 columns
 
                         Forms\Components\Fieldset::make('Loan Details')
                             ->schema([
@@ -409,9 +461,9 @@ class EditPayroll extends Page
                                         }
                                         return $totalInstallmentsLeft > 0 ? $totalInstallmentsLeft : 0;
                                     }),
-
                             ])
-                            ->visible(fn() => ($this->payroll?->loan_amount ?? 0) > 0),
+                            ->visible(fn() => ($this->payroll?->loan_amount ?? 0) > 0)
+                            ->columnSpan(2), // Takes 2 columns
                     ]),
             ])
             ->statePath('data');

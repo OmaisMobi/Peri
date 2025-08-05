@@ -34,7 +34,7 @@ class Index extends CardsPage
             CardItem::make(Admins::class)
                 ->title('Admins')
                 ->description('System administrators')
-                ->icon('heroicon-o-users')
+                ->icon('heroicon-o-bolt')
                 ->group('Users'),
 
             CardItem::make(AttendanceManagers::class)
@@ -52,13 +52,13 @@ class Index extends CardsPage
             CardItem::make(CEO::class)
                 ->title('CEO')
                 ->description('Chief Executive Officer')
-                ->icon('heroicon-o-academic-cap')
+                ->icon('heroicon-o-briefcase')
                 ->group('Users'),
 
             CardItem::make(ListEmployees::class)
                 ->title('Employees')
                 ->description('Employees')
-                ->icon('heroicon-o-user')
+                ->icon('heroicon-o-users')
                 ->group('Users'),
 
             CardItem::make(ListRoles::class)

@@ -66,7 +66,10 @@ class PayrollCalculationService
             $incrementAmountAppliedThisRun = $actual_increment;
         }
 
-        $baseSalaryForCalculations = $currentPeriodBaseSalary - ($userBankDetail->statutory_component_amount ?? 0);
+                $baseSalaryForCalculations = $currentPeriodBaseSalary - ($userBankDetail->statutory_component_amount ?? 0);
+
+        $workingData = $this->calculateWorkingDays($periodStartDate, $periodEndDate, $user);
+        $totalDaysInPeriod = $periodStartDate->diffInDays($periodEndDate) + 1;
 
         $workingData = $this->calculateWorkingDays($periodStartDate, $periodEndDate, $user);
         $totalDaysInPeriod = $periodStartDate->diffInDays($periodEndDate) + 1;
@@ -117,6 +120,11 @@ class PayrollCalculationService
         $totalTaxableDeductions = $totalCustomTaxableDeductions + ($configPenaltyTaxStatus === 'taxable' ? $attendancePenaltiesValue : 0.0);
         $userBankDetail = $user->bankDetails->first();
         $totalNonTaxableEarnings = $totalCustomNonTaxableEarnings + ($configPenaltyTaxStatus === 'non-taxable' ? $attendanceEarningsValue : 0.0);
+        if ($userBankDetail && $userBankDetail->statutory_component_amount) {
+            $totalNonTaxableEarnings += $userBankDetail->statutory_component_amount;
+        }
+
+                $totalNonTaxableEarnings = $totalCustomNonTaxableEarnings + ($configPenaltyTaxStatus === 'non-taxable' ? $attendanceEarningsValue : 0.0);
         if ($userBankDetail && $userBankDetail->statutory_component_amount) {
             $totalNonTaxableEarnings += $userBankDetail->statutory_component_amount;
         }

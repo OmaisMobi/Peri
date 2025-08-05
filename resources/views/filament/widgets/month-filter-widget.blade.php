@@ -1,6 +1,7 @@
 @php
     $user = auth()->user();
-    $showDashboard2 = $user && $user->attendance_config == 0 && $user->can('payroll.manage');
+    $showDashboard2 =
+        ($user && $user->attendance_config == 0 && $user->can('payroll.manage')) || $user->hasRole('Payroll Manager');
 @endphp
 
 <x-filament::widget>
