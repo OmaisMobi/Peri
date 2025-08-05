@@ -20,14 +20,12 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Support\Facades\DB;
-use Malzariey\FilamentForms\Components\DatePickerFilter\Filters\DateRangeFilter;
 use Illuminate\Validation\ValidationException;
 use Filament\Forms\Get;
 use Filament\Tables\Enums\FiltersLayout;
 use Illuminate\Support\Str;
 use Guava\FilamentKnowledgeBase\Contracts\HasKnowledgeBase;
 use Guava\FilamentKnowledgeBase\Facades\KnowledgeBase;
-use Malzariey\FilamentForms\Components\DatePickerFilter\Fields\Forms\Components\DatePicker;
 
 class LeaveResource extends Resource implements HasKnowledgeBase
 {
@@ -1205,7 +1203,7 @@ class LeaveResource extends Resource implements HasKnowledgeBase
             ])
             ->searchPlaceholder('Search Employee')
             ->filters([
-                DateRangeFilter::make('created_at')
+                Forms\Components\DatePicker::make('created_at')
                     ->label('Date')
                     ->icon('heroicon-o-arrow-path')
                     ->startDate(Carbon::now()->startOfMonth())
