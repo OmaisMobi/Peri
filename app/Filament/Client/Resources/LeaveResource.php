@@ -1084,7 +1084,6 @@ class LeaveResource extends Resource implements HasKnowledgeBase
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Name')
-                    ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('type')
                     ->label('Period')
@@ -1124,28 +1123,28 @@ class LeaveResource extends Resource implements HasKnowledgeBase
                         return '-'; // fallback when neither is present
                     }),
 
-                Tables\Columns\TextColumn::make('end')
-                    ->label('Ending Time')
-                    ->getStateUsing(function ($record) {
-                        $date = $record->ending_date
-                            ? \Carbon\Carbon::parse($record->ending_date)->format('Y-m-d')
-                            : null;
+                // Tables\Columns\TextColumn::make('end')
+                //     ->label('Ending Time')
+                //     ->getStateUsing(function ($record) {
+                //         $date = $record->ending_date
+                //             ? \Carbon\Carbon::parse($record->ending_date)->format('Y-m-d')
+                //             : null;
 
-                        $time = $record->ending_time
-                            ? \Carbon\Carbon::parse($record->ending_time)->format('H:i A')
-                            : null;
+                //         $time = $record->ending_time
+                //             ? \Carbon\Carbon::parse($record->ending_time)->format('H:i A')
+                //             : null;
 
-                        if ($date && $time) {
-                            return "$date $time";
-                        }
+                //         if ($date && $time) {
+                //             return "$date $time";
+                //         }
 
-                        if ($date) {
-                            return $date;
-                        }
+                //         if ($date) {
+                //             return $date;
+                //         }
 
-                        return '-';
-                    })
-                    ->toggleable(isToggledHiddenByDefault: true),
+                //         return '-';
+                //     })
+                //     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('duration')
                     ->label('Duration')
                     ->getStateUsing(function ($record) {
@@ -1199,32 +1198,32 @@ class LeaveResource extends Resource implements HasKnowledgeBase
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
-                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
             ])
-            ->searchPlaceholder('Search Employee')
             ->filters([
                 DateRangeFilter::make('created_at')
-                    ->label('Date')
                     ->icon('heroicon-o-arrow-path')
                     ->startDate(Carbon::now()->startOfMonth())
                     ->endDate(Carbon::now())
                     ->maxDate(Carbon::now()),
                 Tables\Filters\SelectFilter::make('type')
-                    ->label('Type')
+                    ->placeholder('Filter by Type')
+                    ->searchable()
                     ->options([
                         'regular' => 'Regular Leave',
                         'half_day' => 'Half Day',
                         'short_leave' => 'Short Leave',
                     ]),
                 Tables\Filters\SelectFilter::make('paid')
-                    ->label('Payment')
+                    ->placeholder('Filter by Payment')
+                    ->searchable()
                     ->options([
                         1 => 'Paid',
                         0 => 'Unpaid',
                     ]),
                 Tables\Filters\SelectFilter::make('status')
-                    ->label('Status')
+                    ->placeholder('Filter by Status')
+                    ->searchable()
                     ->options([
                         'pending' => 'Pending',
                         'approved' => 'Approved',
@@ -1232,16 +1231,18 @@ class LeaveResource extends Resource implements HasKnowledgeBase
                         'pending_cancellation' => 'Pending Cancellation',
                     ]),
 
-            ], layout: FiltersLayout::AboveContentCollapsible)
+            ], layout: FiltersLayout::AboveContent)
             ->defaultSort('created_at', 'desc')
             ->actions([
                 Tables\Actions\ViewAction::make()
                     ->url(fn(Leave $record): string => static::getUrl('edit', ['record' => $record]))
-                    ->openUrlInNewTab()
                     ->visible(fn($record) => in_array($record->status, ['cancelled', 'approved', 'rejected'])),
                 Tables\Actions\EditAction::make()
-                    ->url(fn(Leave $record): string => static::getUrl('edit', ['record' => $record]))
-                    ->openUrlInNewTab()
+                    ->url(
+                        fn(Leave $record): string =>
+                        static::getUrl('edit', ['record' => $record]) .
+                            (request()->getQueryString() ? '?' . request()->getQueryString() : '')
+                    )
                     ->visible(fn($record) => in_array($record->status, ['pending', 'forwarded'])),
                 Tables\Actions\Action::make('approve')
                     ->label('Approve')

@@ -239,18 +239,22 @@
                     </tr>
                     @if (!empty($taxableEarnings))
                         @foreach ($taxableEarnings as $earning)
-                            <tr>
-                                <td>{{ $earning['title'] }}</td>
-                                <td>{{ $symbol }}{{ number_format($earning['calculated_amount']) }}</td>
-                            </tr>
+                            @if (($earning['calculated_amount'] ?? 0) > 0)
+                                <tr>
+                                    <td>{{ $earning['title'] }}</td>
+                                    <td>{{ $symbol }}{{ number_format($earning['calculated_amount']) }}</td>
+                                </tr>
+                            @endif
                         @endforeach
                     @endif
                     @if (!empty($nonTaxableEarnings))
                         @foreach ($nonTaxableEarnings as $earning)
-                            <tr>
-                                <td>{{ $earning['title'] }}</td>
-                                <td>{{ $symbol }}{{ number_format($earning['calculated_amount']) }}</td>
-                            </tr>
+                            @if (($earning['calculated_amount'] ?? 0) > 0)
+                                <tr>
+                                    <td>{{ $earning['title'] }}</td>
+                                    <td>{{ $symbol }}{{ number_format($earning['calculated_amount']) }}</td>
+                                </tr>
+                            @endif
                         @endforeach
                     @endif
                     <tr>
@@ -279,28 +283,36 @@
                 </thead>
                 <tbody>
                     @foreach ($deductionsData['custom_deductions_applied'] ?? [] as $deduction)
-                        <tr>
-                            <td>{{ $deduction['title'] }}</td>
-                            <td>{{ $symbol }}{{ number_format($deduction['calculated_amount']) }}</td>
-                        </tr>
+                        @if (($deduction['calculated_amount'] ?? 0) > 0)
+                            <tr>
+                                <td>{{ $deduction['title'] }}</td>
+                                <td>{{ $symbol }}{{ number_format($deduction['calculated_amount']) }}</td>
+                            </tr>
+                        @endif
                     @endforeach
                     @foreach ($deductionsData['ad_hoc_deductions'] ?? [] as $deduction)
-                        <tr>
-                            <td>{{ $deduction['title'] }}</td>
-                            <td>{{ $symbol }}{{ number_format($deduction['calculated_amount']) }}</td>
-                        </tr>
+                        @if (($deduction['calculated_amount'] ?? 0) > 0)
+                            <tr>
+                                <td>{{ $deduction['title'] }}</td>
+                                <td>{{ $symbol }}{{ number_format($deduction['calculated_amount']) }}</td>
+                            </tr>
+                        @endif
                     @endforeach
                     @foreach ($payroll->fund_data ?? [] as $fund_data)
-                        <tr>
-                            <td>{{ $fund_data['title'] }}</td>
-                            <td>{{ $symbol }}{{ number_format($fund_data['calculated_amount']) }}</td>
-                        </tr>
+                        @if (($fund_data['calculated_amount'] ?? 0) > 0)
+                            <tr>
+                                <td>{{ $fund_data['title'] }}</td>
+                                <td>{{ $symbol }}{{ number_format($fund_data['calculated_amount']) }}</td>
+                            </tr>
+                        @endif
                     @endforeach
                     @foreach ($payroll->loan_data ?? [] as $loan_data)
-                        <tr>
-                            <td>{{ $loan_data['loan_name'] }}</td>
-                            <td>{{ $symbol }}{{ number_format($loan_data['deducted_amount']) }}</td>
-                        </tr>
+                        @if (($loan_data['deducted_amount'] ?? 0) > 0)
+                            <tr>
+                                <td>{{ $loan_data['loan_name'] }}</td>
+                                <td>{{ $symbol }}{{ number_format($loan_data['deducted_amount']) }}</td>
+                            </tr>
+                        @endif
                     @endforeach
                     @if ($showLate && !empty($attendance['late_minutes_deduction_amount']))
                         <tr>

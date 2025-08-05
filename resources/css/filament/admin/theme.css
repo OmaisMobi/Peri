@@ -221,6 +221,18 @@ body {
     @apply !px-6 !gap-x-1;
 }
 
+.fi-resource-leaves .flex.items-center.justify-between {
+    display: none !important;
+}
+
+.fi-resource-leaves .fi-ta-header-toolbar .ms-auto.flex {
+    @apply !justify-end;
+}
+
+.fi-ta-header-toolbar .ms-auto.flex > :nth-child(3) {
+    margin-left: auto;
+}
+
 .fi-resource-todos .fi-icon-btn svg {
     transform: rotate(180deg) !important;
 }
@@ -246,14 +258,6 @@ body {
 }
 
 .fi-resource-edit-record-page.fi-resource-plans .fi-ta-header .fi-btn {
-    @apply bg-green-600 hover:bg-green-500;
-}
-
-.fi-resource-edit-record-page.fi-resource-supports .fi-ta-header {
-    display: block !important;
-}
-
-.fi-resource-edit-record-page.fi-resource-supports .fi-ta-header .fi-btn {
     @apply bg-green-600 hover:bg-green-500;
 }
 
@@ -384,16 +388,4 @@ body {
 
 .dark .warning-text {
     color: theme("colors.amber.200") !important;
-}
-
-.fi-resource-leaves .fi-ta-filters-above-content-ctn {
-    @apply !bg-white;
-}
-
-.fi-resource-leaves .fi-ta-header-toolbar .ms-auto.flex {
-    @apply !justify-between;
-}
-
-.fi-ta-header-toolbar .ms-auto.flex > :nth-child(3) {
-    margin-left: auto;
 }
