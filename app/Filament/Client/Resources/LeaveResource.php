@@ -20,14 +20,14 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Support\Facades\DB;
-use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
+use Malzariey\FilamentForms\Components\DatePickerFilter\Filters\DateRangeFilter;
 use Illuminate\Validation\ValidationException;
 use Filament\Forms\Get;
 use Filament\Tables\Enums\FiltersLayout;
 use Illuminate\Support\Str;
 use Guava\FilamentKnowledgeBase\Contracts\HasKnowledgeBase;
 use Guava\FilamentKnowledgeBase\Facades\KnowledgeBase;
-use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
+use Malzariey\FilamentForms\Components\DatePickerFilter\Fields\Forms\Components\DatePicker;
 
 class LeaveResource extends Resource implements HasKnowledgeBase
 {
@@ -398,12 +398,12 @@ class LeaveResource extends Resource implements HasKnowledgeBase
                                     // Regular Leave Fields
                                     Forms\Components\Grid::make()
                                         ->schema([
-                                            DateRangePicker::make('starting_date')
+                                            Forms\Components\DatePicker::make('starting_date')
                                                 ->required()
                                                 ->reactive()
                                                 ->label('Starting Date')
-                                                ->singleCalendar()
-                                                ->suffixIcon('heroicon-m-calendar')
+                                                ->native(false)
+                                                ->prefixIcon('heroicon-m-calendar')
                                                 ->minDate(function () {
                                                     $user = Auth::user();
                                                     $user->loadMissing('assignedShift.shift', 'assignedDepartment.department');
@@ -413,12 +413,12 @@ class LeaveResource extends Resource implements HasKnowledgeBase
                                                     return null;
                                                 }),
 
-                                            DateRangePicker::make('ending_date')
+                                            Forms\Components\DatePicker::make('ending_date')
                                                 ->required()
                                                 ->label('Ending Date')
                                                 ->afterOrEqual('starting_date')
-                                                ->singleCalendar()
-                                                ->suffixIcon('heroicon-m-calendar')
+                                                ->native(false)
+                                                ->prefixIcon('heroicon-m-calendar')
                                                 ->minDate(function () {
                                                     $user = Auth::user();
                                                     $user->loadMissing('assignedShift.shift', 'assignedDepartment.department');
@@ -539,11 +539,11 @@ class LeaveResource extends Resource implements HasKnowledgeBase
                                     // Half Day Fields
                                     Forms\Components\Grid::make()
                                         ->schema([
-                                            DateRangePicker::make('starting_date')
+                                            Forms\Components\DatePicker::make('starting_date')
                                                 ->required()
                                                 ->label('Date')
-                                                ->singleCalendar()
-                                                ->suffixIcon('heroicon-m-calendar')
+                                                ->native(false)
+                                                ->prefixIcon('heroicon-m-calendar')
                                                 ->minDate(function () {
                                                     $user = Auth::user();
                                                     if ($user && $user->joining_date) {
@@ -568,11 +568,11 @@ class LeaveResource extends Resource implements HasKnowledgeBase
                                     // Short Leave Fields
                                     Forms\Components\Grid::make()
                                         ->schema([
-                                            DateRangePicker::make('starting_date')
+                                            Forms\Components\DatePicker::make('starting_date')
                                                 ->required()
                                                 ->label('Date')
-                                                ->singleCalendar()
-                                                ->suffixIcon('heroicon-m-calendar')
+                                                ->native(false)
+                                                ->prefixIcon('heroicon-m-calendar')
                                                 ->minDate(function () {
                                                     $user = Auth::user();
                                                     if ($user && $user->joining_date) {

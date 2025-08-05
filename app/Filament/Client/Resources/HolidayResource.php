@@ -6,7 +6,6 @@ use App\Filament\Client\Resources\HolidayResource\Pages;
 use App\Models\Holiday;
 use Filament\Facades\Filament;
 use Filament\Forms;
-use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -18,7 +17,6 @@ use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Support\Facades\Auth;
 use Guava\FilamentKnowledgeBase\Contracts\HasKnowledgeBase;
 use Guava\FilamentKnowledgeBase\Facades\KnowledgeBase;
-use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
 
 class HolidayResource extends Resource implements HasKnowledgeBase
 {
@@ -71,19 +69,19 @@ class HolidayResource extends Resource implements HasKnowledgeBase
                                         'xl' => 12,
                                         '2xl' => 12,
                                     ]),
-                                DateRangePicker::make('starting_date')
+                                Forms\Components\DatePicker::make('starting_date')
                                     ->required()
-                                    ->singleCalendar()
-                                    ->suffixIcon('heroicon-m-calendar')
+                                    ->native(false)
+                                    ->prefixIcon('heroicon-m-calendar')
                                     ->columnSpan([
                                         'sm' => 12,
                                         'xl' => 6,
                                         '2xl' => 6,
                                     ]),
-                                DateRangePicker::make('ending_date')
+                                Forms\Components\DatePicker::make('ending_date')
                                     ->required()
-                                    ->singleCalendar()
-                                    ->suffixIcon('heroicon-m-calendar')
+                                    ->native(false)
+                                    ->prefixIcon('heroicon-m-calendar')
                                     ->afterOrEqual('starting_date')
                                     ->columnSpan([
                                         'sm' => 12,

@@ -238,9 +238,6 @@
                         <td>{{ $symbol }}{{ number_format($baseSalary) }}</td>
                     </tr>
                     @if (!empty($taxableEarnings))
-                        <tr>
-                            <td colspan="2"><strong>Taxable Earnings</strong></td>
-                        </tr>
                         @foreach ($taxableEarnings as $earning)
                             <tr>
                                 <td>{{ $earning['title'] }}</td>
@@ -249,9 +246,6 @@
                         @endforeach
                     @endif
                     @if (!empty($nonTaxableEarnings))
-                        {{-- <tr>
-                            <td colspan="2"><strong>Non-Taxable Earnings</strong></td>
-                        </tr> --}}
                         @foreach ($nonTaxableEarnings as $earning)
                             <tr>
                                 <td>{{ $earning['title'] }}</td>

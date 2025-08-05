@@ -16,7 +16,6 @@ use Filament\Facades\Filament;
 use JaOcero\RadioDeck\Forms\Components\RadioDeck;
 use Guava\FilamentKnowledgeBase\Contracts\HasKnowledgeBase;
 use Guava\FilamentKnowledgeBase\Facades\KnowledgeBase;
-use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
 
 class EmployeeResource extends Resource implements HasKnowledgeBase
 {
@@ -92,10 +91,10 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
                                                     'male'   => 'Male',
                                                     'female' => 'Female',
                                                 ]),
-                                            DateRangePicker::make('date_of_birth')
+                                            Forms\Components\DatePicker::make('date_of_birth')
                                                 ->label('Date Of Birth')
-                                                ->singleCalendar()
-                                                ->suffixIcon('heroicon-m-calendar')
+                                                ->native(false)
+                                                ->prefixIcon('heroicon-m-calendar')
                                                 ->required(),
                                             Forms\Components\TextInput::make('blood_group')
                                                 ->label('Blood Group'),
@@ -103,15 +102,15 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
                                                 ->label('NIC Number'),
                                             Forms\Components\TextInput::make('phone_number')
                                                 ->label('Phone Number'),
-                                            DateRangePicker::make('joining_date')
+                                            Forms\Components\DatePicker::make('joining_date')
                                                 ->label('Joining Date')
-                                                ->singleCalendar()
-                                                ->suffixIcon('heroicon-m-calendar')
+                                                ->native(false)
+                                                ->prefixIcon('heroicon-m-calendar')
                                                 ->required(),
-                                            DateRangePicker::make('probation')
+                                            Forms\Components\DatePicker::make('probation')
                                                 ->label('Probation End Date')
-                                                ->singleCalendar()
-                                                ->suffixIcon('heroicon-m-calendar')
+                                                ->native(false)
+                                                ->prefixIcon('heroicon-m-calendar')
                                                 ->hint('Leave blank if not applicable')
                                                 ->reactive(),
                                             Forms\Components\TextInput::make('emergency_person')
@@ -462,11 +461,11 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
                                                 ->label('Resign / Terminate')
                                                 ->helperText('Mark this if the employee has resigned or been terminated')
                                                 ->reactive(),
-                                            DateRangePicker::make('resign_date')
+                                            Forms\Components\DatePicker::make('resign_date')
                                                 ->label('Resignation / Termination Date')
                                                 ->required()
-                                                ->singleCalendar()
-                                                ->suffixIcon('heroicon-m-calendar')
+                                                ->native(false)
+                                                ->prefixIcon('heroicon-m-calendar')
                                                 ->hidden(fn(callable $get) => ! $get('resigned')),
                                         ]),
                                     Forms\Components\Grid::make(1)
