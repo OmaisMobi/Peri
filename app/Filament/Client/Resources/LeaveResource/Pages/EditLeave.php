@@ -163,6 +163,8 @@ class EditLeave extends EditRecord
 
     protected function getRedirectUrl(): string
     {
-        return $this->getResource()::getUrl('index');
+        $query = request()->getQueryString();
+
+        return static::getResource()::getUrl('index') . ($query ? '?' . $query : '');
     }
 }
