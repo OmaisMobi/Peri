@@ -428,7 +428,8 @@ class EditPayroll extends Page
                                             ->minValue(0)
                                             ->required()
                                             ->reactive()
-                                            ->disabled(),
+                                            ->disabled()
+                                            ->formatStateUsing(fn($state) => $state !== null ? round($state) : null),
                                     ])
                                     ->columns(2)
                                     ->addable(false)
