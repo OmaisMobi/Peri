@@ -4,6 +4,7 @@ namespace App\Filament\Client\Resources;
 
 use App\Filament\Client\Resources\TodoResource\Pages;
 use App\Models\Todo;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -12,7 +13,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
@@ -97,23 +97,18 @@ class TodoResource extends Resource
                     ]),
                 ])->collapsible(),
             ])
-            ->filters([
-                SelectFilter::make('is_completed')
-                    ->label('Status')
-                    ->options([
-                        0 => 'Pending',
-                        1 => 'Completed',
-                    ]),
-            ])
+            ->defaultSort('is_completed', 'asc')
             ->actions([
-                Action::make('Complete')
-                    ->action(fn(Todo $record) => $record->update(['is_completed' => true]))
-                    ->requiresConfirmation()
-                    ->color('success')
-                    ->icon('heroicon-o-check-circle')
-                    ->visible(fn(Todo $record) => ! $record->is_completed),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                ActionGroup::make([
+                    Action::make('Complete')
+                        ->action(fn(Todo $record) => $record->update(['is_completed' => true]))
+                        ->requiresConfirmation()
+                        ->color('success')
+                        ->icon('heroicon-o-check-circle')
+                        ->visible(fn(Todo $record) => ! $record->is_completed),
+                    Tables\Actions\EditAction::make()->color('info'),
+                    Tables\Actions\DeleteAction::make(),
+                ])->iconButton()
             ]);
     }
 

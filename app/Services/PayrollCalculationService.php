@@ -66,7 +66,7 @@ class PayrollCalculationService
             $incrementAmountAppliedThisRun = $actual_increment;
         }
 
-                $baseSalaryForCalculations = $currentPeriodBaseSalary - ($userBankDetail->statutory_component_amount ?? 0);
+        $baseSalaryForCalculations = $currentPeriodBaseSalary - ($userBankDetail->statutory_component_amount ?? 0);
 
         $workingData = $this->calculateWorkingDays($periodStartDate, $periodEndDate, $user);
         $totalDaysInPeriod = $periodStartDate->diffInDays($periodEndDate) + 1;
@@ -124,7 +124,7 @@ class PayrollCalculationService
             $totalNonTaxableEarnings += $userBankDetail->statutory_component_amount;
         }
 
-                $totalNonTaxableEarnings = $totalCustomNonTaxableEarnings + ($configPenaltyTaxStatus === 'non-taxable' ? $attendanceEarningsValue : 0.0);
+        $totalNonTaxableEarnings = $totalCustomNonTaxableEarnings + ($configPenaltyTaxStatus === 'non-taxable' ? $attendanceEarningsValue : 0.0);
         if ($userBankDetail && $userBankDetail->statutory_component_amount) {
             $totalNonTaxableEarnings += $userBankDetail->statutory_component_amount;
         }
@@ -140,15 +140,15 @@ class PayrollCalculationService
             $baseSalaryForCalculations,
             $totalTaxableEarnings,
             $totalTaxableDeductions,
+            $totalNonTaxableEarnings,
+            $totalNonTaxableDeductions,
             $effectiveMonthIndicator,
             $periodStartDate
         );
-        foreach ($processedComponents['final_fund_deductions_for_db'] as $fund) {
-            $total_fund_deduct = $fund["calculated_amount"];
-            $totalNonTaxableDeductions += $total_fund_deduct;
-        }
         $netMonthlyPayableSalary = $taxData['monthly_taxable_base']
+            + $totalTaxableEarnings
             + $totalNonTaxableEarnings
+            - $totalTaxableDeductions
             - $totalNonTaxableDeductions
             - $taxData['monthly_tax_calculated'];
         return [
@@ -543,7 +543,7 @@ class PayrollCalculationService
             $processedComponentTitles['deduction'][] = $deduction['title'];
         }
 
-        // Funds Culculation
+        // Funds Calculation
         $user_funds = $user->funds()
             ->wherePivot('team_id', Filament::getTenant()->id)
             ->get();
@@ -561,16 +561,26 @@ class PayrollCalculationService
                     } else {
                         $amount = 0;
                     }
+
+                    // Determine tax status from the fund, defaulting to non-taxable
+                    $taxStatus = $fund->tax_status ?? 'non-taxable';
+
                     $finalFundApplied[] = [
                         'title' => $fund->name,
                         'amount_input' => $amount,
                         'type' => $matchedBracket['type'],
-                        'tax_status' => 'non-taxable',
+                        'tax_status' => $taxStatus,
                         'calculated_amount' => $amount,
                         'id' => $fund->id,
                         'is_one_time_deduction' => false
                     ];
-                    $totals['total_non_taxable_deductions'] += $amount;
+
+                    // Add to the correct deductions total
+                    if ($taxStatus === 'taxable') {
+                        $totals['total_taxable_deductions'] += $amount;
+                    } else {
+                        $totals['total_non_taxable_deductions'] += $amount;
+                    }
                 }
             }
         }
@@ -650,10 +660,12 @@ class PayrollCalculationService
         float $currentPeriodBaseSalary,
         float $totalTaxableEarningsForCurrentPeriod,
         float $totalTaxableDeductionsForCurrentPeriod,
+        float $totalNonTaxableEarningsForCurrentPeriod,
+        float $totalNonTaxableDeductionsForCurrentPeriod,
         int $effectiveMonthIndicatorForCurrentRun,
         Carbon $currentRunStartDate
     ): array {
-        $monthlyTaxableBaseForCurrentPeriod = $currentPeriodBaseSalary + $totalTaxableEarningsForCurrentPeriod;
+        $monthlyTaxableBaseForCurrentPeriod = $currentPeriodBaseSalary;
 
         $companyDetails = Team::where('id', $teamId)->first();
         $companyCountry = $companyDetails ? $companyDetails->country_id : null;
@@ -726,8 +738,7 @@ class PayrollCalculationService
             $multiplier = $monthsRemainingInFY;
         }
 
-        $projectedAnnualSalary = ($monthlyTaxableBaseForCurrentPeriod * $multiplier) + $previousMonthsTaxableBaseSum;
-        $projectedAnnualSalary -= $totalTaxableDeductionsForCurrentPeriod;
+        $projectedAnnualSalary = ($monthlyTaxableBaseForCurrentPeriod * $multiplier) + $previousMonthsTaxableBaseSum + $totalNonTaxableEarningsForCurrentPeriod - $totalNonTaxableDeductionsForCurrentPeriod;
 
         $totalAnnualTax = 0.0;
         $monthlyTaxCalculated = 0.0;
@@ -983,16 +994,26 @@ class PayrollCalculationService
                     } else {
                         $amount = 0;
                     }
+
+                    // Determine tax status from the fund, defaulting to non-taxable
+                    $taxStatus = $fund->tax_status ?? 'non-taxable';
+
                     $finalFundApplied[] = [
                         'title' => $fund->name,
                         'amount_input' => $amount,
                         'type' => $matchedBracket['type'],
-                        'tax_status' => 'non-taxable',
+                        'tax_status' => $taxStatus,
                         'calculated_amount' => $amount,
                         'id' => $fund->id,
                         'is_one_time_deduction' => false
                     ];
-                    $totalAdHocNonTaxableDeductions += $amount;
+
+                    // Add to the correct deductions total
+                    if ($taxStatus === 'taxable') {
+                        $totalAdHocTaxableDeductions += $amount;
+                    } else {
+                        $totalAdHocNonTaxableDeductions += $amount;
+                    }
                 }
             }
         }
@@ -1014,7 +1035,7 @@ class PayrollCalculationService
 
         $overtimeAmount = round($attendanceFinancialImpacts['overtime_earning_amount'] ?? 0.0);
         if ($applyOvertimeEarnings) {
-            $taxableAttendanceEarnings += $overtimeAmount;
+            $nonTaxableAttendanceEarnings += $overtimeAmount;
         }
 
         if ($deductLatePenalties) {
@@ -1047,6 +1068,8 @@ class PayrollCalculationService
             $baseSalaryForRecalculationCalculations,
             $totalTaxableEarnings,
             $totalTaxableDeductions,
+            $totalNonTaxableEarnings,
+            $totalNonTaxableDeductions,
             $payroll->month_indicator,
             $periodStartDate
         );

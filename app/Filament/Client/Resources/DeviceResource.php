@@ -73,9 +73,7 @@ class DeviceResource extends Resource implements HasKnowledgeBase
                 Tables\Columns\TextColumn::make('device_external_port')->label('External Port')->searchable(),
 
             ])
-            ->filters([
-                //
-            ])
+            ->searchPlaceholder('Search Device')
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),

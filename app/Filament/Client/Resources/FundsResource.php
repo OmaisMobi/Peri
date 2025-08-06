@@ -45,6 +45,12 @@ class FundsResource extends Resource
                         Grid::make(2)
                             ->schema([
                                 Forms\Components\TextInput::make('name')->required(),
+                                Forms\Components\Select::make('tax_status')
+                                    ->options([
+                                        'non-taxable' => 'Non-Taxable (Pre-Tax)',
+                                        'taxable' => 'Taxable (Post-Tax)',
+                                    ])
+                                    ->required(),
                                 TableRepeater::make('brackets')
                                     ->label('Brackets')
                                     ->schema([
