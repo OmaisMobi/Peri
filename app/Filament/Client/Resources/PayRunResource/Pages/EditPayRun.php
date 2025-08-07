@@ -126,6 +126,16 @@ class EditPayRun extends EditRecord
                         }
                     }
                 }
+
+                // Update employee's base_salary if an increment was applied in this payroll
+                if ($payroll->applied_increment_amount > 0) {
+                    $employeeBankDetails = $payroll->user->bankDetails->first();
+                    if ($employeeBankDetails) {
+                        // The payroll's base_salary already includes the increment
+                        $employeeBankDetails->base_salary = $payroll->base_salary;
+                        $employeeBankDetails->save();
+                    }
+                }
             }
 
             $this->redirect($this->getResource()::getUrl('index'));

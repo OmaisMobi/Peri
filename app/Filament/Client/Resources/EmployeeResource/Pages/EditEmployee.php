@@ -104,14 +104,14 @@ class EditEmployee extends EditRecord
 
         $bankDetails = $this->data['bank_details'] ?? [];
         $bankDetails['base_salary'] = $bankDetails['base_salary'] !== '' ? $bankDetails['base_salary'] : null;
-        $bankDetails['probation_salary'] = $bankDetails['probation_salary'] !== '' ? $bankDetails['probation_salary'] : null;
+        
 
         if (($bankDetails['payment_method'] ?? null) !== 'bank_transfer') {
             $bankDetails['account_holder_name'] = null;
             $bankDetails['account_number'] = null;
             $bankDetails['bank_name'] = null;
             $bankDetails['base_salary'] = $bankDetails['base_salary'] !== '' ? $bankDetails['base_salary'] : null;
-            $bankDetails['probation_salary'] = $bankDetails['probation_salary'] !== '' ? $bankDetails['probation_salary'] : null;
+            
         }
 
         unset($this->data['bank_details']);

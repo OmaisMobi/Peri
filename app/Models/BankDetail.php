@@ -10,7 +10,6 @@ class BankDetail extends Model
         'user_id',
         'team_id',
         'base_salary',
-        'probation_salary',
         'payment_method',
         'account_number',
         'account_holder_name',
@@ -18,7 +17,7 @@ class BankDetail extends Model
         'salary_currency',
         'statutory_component_category_id',
         'statutory_component_percentage',
-        'statutory_component_amount'
+        
     ];
 
     public function user()

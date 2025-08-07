@@ -173,20 +173,21 @@ class EditPayroll extends Page
                                         ->label('Statutory Amount')
                                         ->content(function () use ($currency) {
                                             $user = $this->payroll?->user;
-                                            $statutoryPercentage = $user->bankDetails->first()->statutory_component_amount ?? 0;
-                                            return $currency . ' ' . number_format($statutoryPercentage);
+                                            $currentPeriodBaseSalary = $this->payroll?->base_salary ?? 0;
+                                            $statutoryPercentage = $user->bankDetails->first()->statutory_component_percentage ?? 0;
+                                            $statutoryAdjustment = ($statutoryPercentage + 100) / 100;
+                                            $statutoryAmount = ($currentPeriodBaseSalary) / $statutoryAdjustment;
+                                            $statutoryBase = $currentPeriodBaseSalary - $statutoryAmount;
+                                            return $currency . ' ' . number_format($statutoryBase);
                                         }),
                                     Forms\Components\Placeholder::make('base_salary')
                                         ->label('Base Salary')
                                         ->content(function () use ($currency) {
-                                            $grossSalary = $this->payroll?->base_salary ?? 0;
                                             $user = $this->payroll?->user;
-                                            $statutoryPercentage = $user->bankDetails->first()->statutory_component_amount ?? 0;
-                                            if ($user && $user->bankDetails->first()) {
-                                                $statutoryPercentage = $user->bankDetails->first()->statutory_component_amount ?? 0;
-                                            }
-                                            $statutoryAmount = 0;
-                                            $statutoryAmount = $grossSalary - $statutoryPercentage;
+                                            $currentPeriodBaseSalary = $this->payroll?->base_salary ?? 0;
+                                            $statutoryPercentage = $user->bankDetails->first()->statutory_component_percentage ?? 0;
+                                            $statutoryAdjustment = ($statutoryPercentage + 100) / 100;
+                                            $statutoryAmount = ($currentPeriodBaseSalary) / $statutoryAdjustment;
                                             return $currency . ' ' . number_format($statutoryAmount);
                                         }),
                                 ])
