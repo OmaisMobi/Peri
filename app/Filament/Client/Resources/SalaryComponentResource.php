@@ -158,10 +158,20 @@ class SalaryComponentResource extends Resource implements HasKnowledgeBase
                     ->label('Category'),
                 Tables\Columns\TextColumn::make('component_type')
                     ->label('Type')
+                    ->formatStateUsing(fn(string $state): string => ucfirst($state))
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         'earning' => 'success',
                         'deduction' => 'danger',
+                        default => 'gray',
+                    }),
+                Tables\Columns\TextColumn::make('tax_status')
+                    ->label('Tax Status')
+                    ->badge()
+                    ->formatStateUsing(fn(string $state): string => ucfirst($state))
+                    ->color(fn(string $state): string => match ($state) {
+                        'taxable' => 'warning',
+                        'non-taxable' => 'info',
                         default => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('amount')
