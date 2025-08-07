@@ -300,13 +300,6 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
                                                 return $currency;
                                             }),
 
-                                        Forms\Components\TextInput::make('bank_details.probation_salary')
-                                            ->label('Probation Salary')
-                                            ->numeric()
-                                            ->minValue(0)
-                                            ->prefix(fn(callable $get) => $get('bank_details.salary_currency'))
-                                            ->visible(fn($get) => filled($get('probation'))),
-
                                         Forms\Components\TextInput::make('bank_details.base_salary')
                                             ->label('Gross Salary')
                                             ->numeric()
@@ -319,7 +312,7 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
                                                     $divisor = ($percentage + 100) / 100;
                                                     if ($divisor != 0) {
                                                         $adjusted_gross = $state / $divisor;
-                                                        $set('bank_details.statutory_component_amount', round($state - $adjusted_gross, 2));
+                                                        $set('bank_details.statutory_component_amount', round($state - $adjusted_gross));
                                                     }
                                                 }
                                             }),
@@ -328,7 +321,7 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
                                     Forms\Components\Fieldset::make('Statutory Component')
                                         ->schema([
                                             Forms\Components\Select::make('bank_details.statutory_component_category_id')
-                                                ->label('Component')
+                                                ->label('Component Name')
                                                 ->options(\App\Models\SalaryComponentCategory::pluck('name', 'id'))
                                                 ->createOptionForm([
                                                     Forms\Components\TextInput::make('name')
@@ -343,6 +336,7 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
                                                     return $category->id;
                                                 })
                                                 ->preload(),
+
                                             Forms\Components\TextInput::make('bank_details.statutory_component_percentage')
                                                 ->label('Percentage')
                                                 ->numeric()
@@ -350,21 +344,37 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
                                                 ->reactive()
                                                 ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                                     $grossSalary = $get('bank_details.base_salary');
-                                                    if (is_numeric($grossSalary) && is_numeric($state)) {
+                                                    if (is_numeric($grossSalary) && is_numeric($state) && $state > 0) {
                                                         $divisor = ($state + 100) / 100;
                                                         if ($divisor != 0) {
                                                             $adjusted_gross = $grossSalary / $divisor;
-                                                            $set('bank_details.statutory_component_amount', round($grossSalary - $adjusted_gross, 2));
+                                                            $set('bank_details.statutory_component_amount', round($grossSalary - $adjusted_gross));
                                                         }
                                                     }
                                                 }),
+
                                             Forms\Components\TextInput::make('bank_details.statutory_component_amount')
                                                 ->label('Amount')
                                                 ->prefix(fn(callable $get) => $get('bank_details.salary_currency'))
                                                 ->numeric()
-                                                ->disabled()
+                                                ->readOnly()
+                                                ->dehydrated(true)
+                                                ->formatStateUsing(fn($state) => $state !== null ? round($state) : null)
                                         ])
-                                        ->columns(3),
+                                        ->columns(3)
+                                        ->afterStateHydrated(function (callable $set, callable $get) {
+                                            // Calculate amount when fieldset is hydrated
+                                            $grossSalary = $get('bank_details.base_salary');
+                                            $percentage = $get('bank_details.statutory_component_percentage');
+
+                                            if (is_numeric($grossSalary) && is_numeric($percentage) && $percentage > 0) {
+                                                $divisor = ($percentage + 100) / 100;
+                                                if ($divisor != 0) {
+                                                    $adjusted_gross = $grossSalary / $divisor;
+                                                    $set('bank_details.statutory_component_amount', round($grossSalary - $adjusted_gross));
+                                                }
+                                            }
+                                        }),
 
                                     RadioDeck::make('bank_details.payment_method')
                                         ->label('Payment Method')

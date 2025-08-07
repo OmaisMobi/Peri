@@ -66,7 +66,12 @@ class PayrollCalculationService
             $incrementAmountAppliedThisRun = $actual_increment;
         }
 
-        $baseSalaryForCalculations = $currentPeriodBaseSalary - ($userBankDetail->statutory_component_amount ?? 0);
+        $statutoryPercentage = $userBankDetail->statutory_component_percentage ?? 0;
+        $statutoryPercentage = $userBankDetail->statutory_component_percentage ?? 0;
+        $statutoryAdjustment = ($statutoryPercentage + 100) / 100;
+        $baseSalaryAfterStatutory = round(($currentPeriodBaseSalary) / $statutoryAdjustment);
+        $statutoryAmount = round($currentPeriodBaseSalary - $baseSalaryAfterStatutory);
+        $baseSalaryForCalculations = $baseSalaryAfterStatutory;
 
         $workingData = $this->calculateWorkingDays($periodStartDate, $periodEndDate, $user);
         $totalDaysInPeriod = $periodStartDate->diffInDays($periodEndDate) + 1;
@@ -120,14 +125,7 @@ class PayrollCalculationService
         $totalTaxableDeductions = $totalCustomTaxableDeductions + ($configPenaltyTaxStatus === 'taxable' ? $attendancePenaltiesValue : 0.0);
         $userBankDetail = $user->bankDetails->first();
         $totalNonTaxableEarnings = $totalCustomNonTaxableEarnings + ($configPenaltyTaxStatus === 'non-taxable' ? $attendanceEarningsValue : 0.0);
-        if ($userBankDetail && $userBankDetail->statutory_component_amount) {
-            $totalNonTaxableEarnings += $userBankDetail->statutory_component_amount;
-        }
-
-        $totalNonTaxableEarnings = $totalCustomNonTaxableEarnings + ($configPenaltyTaxStatus === 'non-taxable' ? $attendanceEarningsValue : 0.0);
-        if ($userBankDetail && $userBankDetail->statutory_component_amount) {
-            $totalNonTaxableEarnings += $userBankDetail->statutory_component_amount;
-        }
+        
 
         $totalNonTaxableDeductions = $totalCustomNonTaxableDeductions + ($configPenaltyTaxStatus === 'non-taxable' ? $attendancePenaltiesValue : 0.0);
 
@@ -251,10 +249,7 @@ class PayrollCalculationService
             $baseSalaryForPeriod = $manualBaseSalaryOverride;
             $originalBaseSalary = $manualBaseSalaryOverride;
         } else {
-            $now = Carbon::now();
-            $probationEndDate = $user->probation ? Carbon::parse($user->probation) : null;
-            $onProbation = $probationEndDate && $now->lt($probationEndDate);
-            $baseSalaryForPeriod = $onProbation ? ($user->probation_salary ?? 0.0) : ($user->base_salary ?? 0.0);
+            $baseSalaryForPeriod = $user->base_salary ?? 0.0;
             $originalBaseSalary = $baseSalaryForPeriod;
         }
         return [
@@ -720,25 +715,68 @@ class PayrollCalculationService
             ->where('date_range_start', '>=', $currentFYStart->toDateString())
             ->where('date_range_start', '<', $currentRunStartDate->toDateString());
 
-        $previousMonthsTaxableBaseSum = (clone $previousMonthsPayrollQuery)
-            ->get()
-            ->sum(function ($payroll) {
-                return (float) ($payroll->tax_data['monthly_taxable_base'] ?? 0);
-            });
+        // Get all previous payrolls in the current financial year.
+        $previousPayrolls = (clone $previousMonthsPayrollQuery)->get();
 
-        $multiplier = 1;
-        $latestPreviousPayroll = (clone $previousMonthsPayrollQuery)
-            ->orderByDesc('date_range_start')
-            ->first();
+        // Sum the actual taxable base from all previous payrolls.
+        $previousMonthsTaxableBaseSum = $previousPayrolls->sum(function ($payroll) {
+            return (float) ($payroll->tax_data['monthly_taxable_base'] ?? 0);
+        });
 
-        if ($latestPreviousPayroll) {
-            $previousMonthsRemainingInFY = (float)($latestPreviousPayroll->tax_data['months_remaining_in_fy'] ?? 0);
-            $multiplier = max(1, $previousMonthsRemainingInFY - 1);
-        } else {
-            $multiplier = $monthsRemainingInFY;
-        }
+        // Sum the actual non-taxable earnings from all previous payrolls.
+        // IMPORTANT: Per user instruction, statutory component is NOT a non-taxable earning.
+        $previousMonthsNonTaxableEarningsSum = $previousPayrolls->sum(function ($payroll) {
+            $sum = 0;
+            if (isset($payroll->earnings_data['custom_earnings_applied'])) {
+                foreach ($payroll->earnings_data['custom_earnings_applied'] as $earning) {
+                    if (($earning['tax_status'] ?? 'taxable') === 'non-taxable') {
+                        $sum += $earning['calculated_amount'] ?? 0;
+                    }
+                }
+            }
+            // Non-taxable attendance earnings
+             if (isset($payroll->attendance_data['apply_overtime_earnings']) && $payroll->attendance_data['apply_overtime_earnings']) {
+                 $sum += $payroll->attendance_data['overtime_earning_amount'] ?? 0;
+            }
+            return $sum;
+        });
 
-        $projectedAnnualSalary = ($monthlyTaxableBaseForCurrentPeriod * $multiplier) + $previousMonthsTaxableBaseSum + $totalNonTaxableEarningsForCurrentPeriod - $totalNonTaxableDeductionsForCurrentPeriod;
+        // Sum the actual non-taxable deductions from all previous payrolls.
+        $previousMonthsNonTaxableDeductionsSum = $previousPayrolls->sum(function ($payroll) {
+            $sum = 0;
+            if (isset($payroll->deductions_data['custom_deductions_applied'])) {
+                foreach ($payroll->deductions_data['custom_deductions_applied'] as $deduction) {
+                    if (($deduction['tax_status'] ?? 'non-taxable') === 'non-taxable') {
+                        $sum += $deduction['calculated_amount'] ?? 0;
+                    }
+                }
+            }
+            if (isset($payroll->fund_data)) {
+                foreach ($payroll->fund_data as $fund) {
+                    if (($fund['tax_status'] ?? 'non-taxable') === 'non-taxable') {
+                        $sum += $fund['calculated_amount'] ?? 0;
+                    }
+                }
+            }
+            $sum += $payroll->loan_amount ?? 0;
+            if (isset($payroll->attendance_data['deduct_late_penalties']) && $payroll->attendance_data['deduct_late_penalties']) {
+                $sum += $payroll->attendance_data['late_minutes_deduction_amount'] ?? 0;
+            }
+            if (isset($payroll->attendance_data['deduct_absent_penalties']) && $payroll->attendance_data['deduct_absent_penalties']) {
+                $sum += $payroll->attendance_data['absent_deduction_amount'] ?? 0;
+            }
+            return $sum;
+        });
+
+        // Project the annual taxable base by adding past actuals to projected future earnings.
+        $projectedAnnualTaxableBase = $previousMonthsTaxableBaseSum + ($monthlyTaxableBaseForCurrentPeriod * $monthsRemainingInFY);
+
+        // Get the total Year-To-Date non-taxable earnings and deductions.
+        $totalYTDEarnings = $previousMonthsNonTaxableEarningsSum + $totalNonTaxableEarningsForCurrentPeriod;
+        $totalYTDDeductions = $previousMonthsNonTaxableDeductionsSum + $totalNonTaxableDeductionsForCurrentPeriod;
+
+        // The final projected salary for tax calculation.
+        $projectedAnnualSalary = $projectedAnnualTaxableBase + $totalYTDEarnings - $totalYTDDeductions;
 
         $totalAnnualTax = 0.0;
         $monthlyTaxCalculated = 0.0;
@@ -862,7 +900,12 @@ class PayrollCalculationService
         }
 
         $userBankDetail = $user->bankDetails->first();
-        $baseSalaryForRecalculationCalculations = $baseSalary - ($userBankDetail->statutory_component_amount ?? 0);
+        $statutoryPercentage = $userBankDetail->statutory_component_percentage ?? 0;
+        $statutoryPercentage = $userBankDetail->statutory_component_percentage ?? 0;
+        $statutoryAdjustment = ($statutoryPercentage + 100) / 100;
+        $baseSalaryAfterStatutory = round(($baseSalary) / $statutoryAdjustment);
+        $statutoryAmount = round($baseSalary - $baseSalaryAfterStatutory);
+        $baseSalaryForRecalculationCalculations = $baseSalaryAfterStatutory;
 
         $customEarningsApplied = [];
         $adHocEarningsCalculated = [];

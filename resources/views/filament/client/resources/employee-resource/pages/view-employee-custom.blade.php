@@ -299,17 +299,7 @@
                                 {{ number_format($record->bankDetails->first()->base_salary ?? 0, 2) }}
                             </p>
                         </div>
-                        @if ($record->probation)
-                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 dark:bg-gray-800">
-                                <p
-                                    class="text-xs font-medium text-gray-500 uppercase tracking-wide dark:text-gray-200">
-                                    Probation Salary</p>
-                                <p class="text-sm font-semibold text-gray-900 dark:text-white">
-                                    {{ $record->bankDetails->first()->salary_currency ?? '' }}
-                                    {{ number_format($record->bankDetails->first()->probation_salary ?? 0, 2) }}
-                                </p>
-                            </div>
-                        @endif
+                        
                         <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 dark:bg-gray-800">
                             <p class="text-xs font-medium text-gray-500 uppercase tracking-wide dark:text-gray-200">
                                 Payment
