@@ -1094,8 +1094,8 @@ class PayrollCalculationService
             $nonTaxableAttendancePenalties += $attendanceFinancialImpacts['absent_deduction_amount'];
         }
 
-        $totalTaxableEarnings = $totalCustomTaxableEarnings + $totalAdHocTaxableEarnings + $taxableAttendanceEarnings;
-        $totalNonTaxableEarnings = $totalCustomNonTaxableEarnings + $totalAdHocNonTaxableEarnings + $nonTaxableAttendanceEarnings;
+        $totalTaxableEarnings = $totalCustomTaxableEarnings + $totalAdHocNonTaxableEarnings + $taxableAttendanceEarnings; // total taxable earnings has totalAdHocNonTaxableEarnings
+        $totalNonTaxableEarnings = $totalCustomNonTaxableEarnings + $totalAdHocTaxableEarnings + $nonTaxableAttendanceEarnings; // total non-taxable earnings has totalAdHocTaxableEarnings
         $totalTaxableDeductions = $totalCustomTaxableDeductions + $totalAdHocTaxableDeductions + $taxableAttendancePenalties;
         $totalNonTaxableDeductions = $totalCustomNonTaxableDeductions + $totalAdHocNonTaxableDeductions + $nonTaxableAttendancePenalties;
 
