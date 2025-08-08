@@ -125,7 +125,7 @@ class PayrollCalculationService
         $totalTaxableDeductions = $totalCustomTaxableDeductions + ($configPenaltyTaxStatus === 'taxable' ? $attendancePenaltiesValue : 0.0);
         $userBankDetail = $user->bankDetails->first();
         $totalNonTaxableEarnings = $totalCustomNonTaxableEarnings + ($configPenaltyTaxStatus === 'non-taxable' ? $attendanceEarningsValue : 0.0);
-        
+
 
         $totalNonTaxableDeductions = $totalCustomNonTaxableDeductions + ($configPenaltyTaxStatus === 'non-taxable' ? $attendancePenaltiesValue : 0.0);
 
@@ -335,6 +335,8 @@ class PayrollCalculationService
         } else {
             Log::warning("PayrollCalculationService: \$leaveBalances is null or not iterable for user {$user->id} in calculateAttendanceSummary.");
         }
+
+        $summary['actual_working_days'] -= ($summary['paid_leave_days_count'] + $summary['unpaid_leave_days_count']);
 
         for ($currentDay = $startDate->copy(); $currentDay->lte($endDate); $currentDay->addDay()) {
             if ($employeeJoiningDate && $currentDay->lt($employeeJoiningDate)) continue;
@@ -735,8 +737,8 @@ class PayrollCalculationService
                 }
             }
             // Non-taxable attendance earnings
-             if (isset($payroll->attendance_data['apply_overtime_earnings']) && $payroll->attendance_data['apply_overtime_earnings']) {
-                 $sum += $payroll->attendance_data['overtime_earning_amount'] ?? 0;
+            if (isset($payroll->attendance_data['apply_overtime_earnings']) && $payroll->attendance_data['apply_overtime_earnings']) {
+                $sum += $payroll->attendance_data['overtime_earning_amount'] ?? 0;
             }
             return $sum;
         });
@@ -962,9 +964,12 @@ class PayrollCalculationService
                 'calculated_amount' => $calculatedAmount,
                 'is_one_time_deduction' => false,
             ];
-            $totalAdHocTaxableEarnings += $calculatedAmount;
+            if ($adHocEarning['tax_status'] === 'taxable') {
+                $totalAdHocTaxableEarnings += $calculatedAmount;
+            } else {
+                $totalAdHocNonTaxableEarnings += $calculatedAmount;
+            }
         }
-
 
         $totalCustomTaxableDeductions = 0.0;
         $totalCustomNonTaxableDeductions = 0.0;
