@@ -88,7 +88,7 @@ class PayrollCalculationService
 
         $financialRates = $this->calculateFinancialRates(
             $user,
-            $baseSalaryForCalculations,
+            $originalBaseSalaryForCalc,  // change from $baseSalaryForCalculations to $originalBaseSalaryForCalc becouse the per day rate and per minute rate should be based on the original base salary
             $workingData['workingDays']
         );
         $perDayRate = $financialRates['per_day_rate'];
