@@ -213,7 +213,7 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
                             // Tab 3: Leave Approval Hierarchy
                             Forms\Components\Tabs\Tab::make('Leave Approval Hierarchy')
                                 ->icon('heroicon-m-check-circle')
-                                ->visible(fn(callable $get) => $get('attendance_config'))
+                                ->visible(fn(callable $get) => $get('attendance_config') && !Auth::user()->hasRole('Payroll Manager'))
                                 ->schema([
                                     Forms\Components\Repeater::make('approval_steps')
                                         ->label('Hierarchy')
@@ -270,6 +270,7 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
 
                             Forms\Components\Tabs\Tab::make('Salary Information')
                                 ->icon('heroicon-m-currency-dollar')
+                                ->visible(fn() => Auth::user()->hasRole(['Admin', 'Payroll Manager']) || Auth::user()->can('payroll.manage'))
                                 ->schema([
                                     Forms\Components\Grid::make(2)->schema([
                                         Forms\Components\TextInput::make('bank_details.salary_currency')
@@ -428,6 +429,7 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
                             // Tab 6: Account Setting
                             Forms\Components\Tabs\Tab::make('Account Setting')
                                 ->icon('heroicon-m-home')
+                                ->visible(fn() => !Auth::user()->hasRole('Payroll Manager'))
                                 ->schema([
                                     Forms\Components\Grid::make(2)
                                         ->schema([
@@ -462,6 +464,7 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
                             // Tab 7: Resignation / Termination
                             Forms\Components\Tabs\Tab::make('Resignation / Termination')
                                 ->icon('heroicon-m-exclamation-triangle')
+                                ->visible(fn() => !Auth::user()->hasRole('Payroll Manager'))
                                 ->schema([
                                     Forms\Components\Grid::make(2)
                                         ->schema([
