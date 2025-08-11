@@ -19,6 +19,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Grid;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\HtmlString;
 
 class EditPayroll extends Page
 {
@@ -46,13 +47,35 @@ class EditPayroll extends Page
 
         $components = $this->fetchApplicableComponents($this->payroll);
 
+        $adHocEarnings = collect($this->payroll->earnings_data['ad_hoc_earnings'] ?? []);
+
+        $fundReimbursements = $adHocEarnings->filter(fn($item) => str($item['id'])->startsWith('adhoc_earning_fund_id'))->values()->all();
+        $adHocEarnings = $adHocEarnings->reject(fn($item) => str($item['id'])->startsWith('adhoc_earning_fund_id'))->values()->all();
+
+        $fundReimbursements = collect($fundReimbursements)->map(function ($item) {
+            $item['amount_input'] = $item['amount'] ?? null;
+            return $item;
+        })->all();
+
+        $adHocEarnings = collect($adHocEarnings)->map(function ($item) {
+            $item['amount_input'] = $item['amount'] ?? null;
+            return $item;
+        })->all();
+
+        $adHocDeductions = collect($this->payroll->deductions_data['ad_hoc_deductions'] ?? [])->map(function ($item) {
+            $item['amount_input'] = $item['amount'] ?? null;
+            return $item;
+        })->all();
+
         $formData = [
             'apply_increment' => $this->payroll->applied_increment_amount > 0,
+            'increment_type' => $this->payroll->increment_type,
             'increment_value' => $this->payroll->applied_increment_amount,
             'earnings' => $components['earnings'],
             'deductions' => $components['deductions'],
-            'ad_hoc_earnings' => $this->payroll->earnings_data['ad_hoc_earnings'] ?? [],
-            'ad_hoc_deductions' => $this->payroll->deductions_data['ad_hoc_deductions'] ?? [],
+            'fund_reimbursements' => $fundReimbursements,
+            'ad_hoc_earnings' => $adHocEarnings,
+            'ad_hoc_deductions' => $adHocDeductions,
             'overtime_earning_amount' => $this->payroll->attendance_data['overtime_earning_amount'] ?? 0,
             'late_deduction_amount' => $this->payroll->attendance_data['late_minutes_deduction_amount'] ?? 0,
             'absent_deduction_amount' => $this->payroll->attendance_data['absent_deduction_amount'] ?? 0,
@@ -63,8 +86,8 @@ class EditPayroll extends Page
         ];
 
         // Logic to set fund toggle states
-        $adHocEarnings = $formData['ad_hoc_earnings'];
-        $adHocEarningIds = collect($adHocEarnings)->pluck('id');
+        $adHocEarningItems = $formData['fund_reimbursements'];
+        $adHocEarningIds = collect($adHocEarningItems)->pluck('id');
         $employeeFunds = Helper::getEmployeeFund($this->payroll->user);
 
         foreach ($employeeFunds as $fund) {
@@ -168,7 +191,9 @@ class EditPayroll extends Page
                                 Grid::make(3)->schema([
                                     Forms\Components\Placeholder::make('gross_salary')
                                         ->label('Gross Salary')
-                                        ->content(fn() => $currency . ' ' . number_format($this->payroll?->base_salary ?? 0)),
+                                        ->content(fn() => new HtmlString(
+                                            '<span class="font-bold">' . $currency . ' ' . number_format($this->payroll?->base_salary ?? 0) . '</span>'
+                                        )),
                                     Forms\Components\Placeholder::make('statutory_component')
                                         ->label('Statutory Amount')
                                         ->content(function () use ($currency) {
@@ -196,11 +221,12 @@ class EditPayroll extends Page
                         // -- Increment Logic --
                         Forms\Components\Fieldset::make('Increment')
                             ->schema([
-                                Grid::make(3)->schema([
+                                Grid::make(2)->schema([
                                     Forms\Components\Checkbox::make('apply_increment')
                                         ->label('Apply')
                                         ->disabled(fn() => isset($this->payroll) && $this->payroll->applied_increment_amount > 0)
-                                        ->reactive(),
+                                        ->reactive()
+                                        ->columnSpan(2),
 
                                     Forms\Components\Select::make('increment_type')
                                         ->label('Type')
@@ -233,39 +259,156 @@ class EditPayroll extends Page
                                 ])
                             ])->columnSpan(2), // Takes 2 columns
 
+                        Forms\Components\Fieldset::make('Loan Details')
+                            ->schema([
+                                Forms\Components\Placeholder::make('loan_deduction_amount')
+                                    ->label('Amount Deducted')
+                                    ->content(fn() => $currency . ' ' . number_format($this->payroll?->loan_amount ?? 0)),
+
+                                Forms\Components\Placeholder::make('installments_left')
+                                    ->label('Installments Left')
+                                    ->content(function () {
+                                        $totalInstallmentsLeft = 0;
+
+                                        if (!empty($this->payroll->loan_data)) {
+                                            foreach ($this->payroll->loan_data as $loanDeduction) {
+                                                $loan = \App\Models\Loan::find($loanDeduction['loan_id']);
+                                                if ($loan && $loan->installment_amount > 0) {
+                                                    $installments = ceil($loan->remaining_amount / $loan->installment_amount);
+                                                    $totalInstallmentsLeft += max(0, $installments - 1);
+                                                }
+                                            }
+                                        }
+                                        return $totalInstallmentsLeft > 0 ? $totalInstallmentsLeft : 0;
+                                    }),
+                            ])
+                            ->visible(fn() => ($this->payroll?->loan_amount ?? 0) > 0)
+                            ->columnSpan(2), // Takes 2 columns
+
+                        // -- Fund Section --
+                        Forms\Components\Fieldset::make('Fund')
+                            ->label('Active Funds')
+                            ->schema([
+                                Repeater::make('fund_data')
+                                    ->label('')
+                                    ->schema([
+                                        Forms\Components\TextInput::make('amount_input')
+                                            ->label(fn(callable $get) => $get('title') ?: 'Amount')
+                                            ->numeric()
+                                            ->minValue(0)
+                                            ->required()
+                                            ->reactive()
+                                            ->disabled()
+                                            ->prefix(fn($state) => $currency . ' ')
+                                            ->formatStateUsing(fn($state) => $state !== null ? round($state) : null),
+                                    ])
+                                    ->columns(2)
+                                    ->addable(false)
+                                    ->deletable(false)
+                                    ->reorderable(false),
+                            ])
+                            ->columns(2)
+                            ->visible(fn() => $this->checkFunds())
+                            ->columnSpan(2), // Takes 2 columns
+
                         Forms\Components\Fieldset::make('Fund Earnings')
                             ->label('Fund Reimbursement')
-                            ->schema(
+                            ->schema(array_merge(
                                 collect(Helper::getEmployeeFund($this->payroll->user))->map(function ($fund) use ($currency) {
-                                    return Forms\Components\Toggle::make('fund_toggle_' . $fund->id)
+                                    return Forms\Components\Checkbox::make('fund_toggle_' . $fund->id)
                                         ->label($fund->name)
                                         ->reactive()
                                         ->afterStateUpdated(function ($state, callable $set, callable $get) use ($fund) {
-                                            $earnings = $get('ad_hoc_earnings') ?? [];
-                                            $existing = collect($earnings)->firstWhere('id', 'adhoc_earning_fund_id' . $fund->id);
+                                            $reimbursements = $get('fund_reimbursements') ?? [];
+                                            $existing = collect($reimbursements)->firstWhere('id', 'adhoc_earning_fund_id' . $fund->id);
                                             if ($state && !$existing) {
-                                                $earnings[] = [
+                                                $reimbursements[] = [
                                                     'id' => 'adhoc_earning_fund_id' . $fund->id,
                                                     'title' => $fund->name,
                                                     'value_type' => 'number',
                                                     'amount_input' => Helper::getEmployeeDeductedFund($this->payroll->user, $fund),
                                                     'tax_status' => 'taxable',
                                                 ];
-                                                $set('ad_hoc_earnings', $earnings);
+                                                $set('fund_reimbursements', $reimbursements);
                                             }
 
                                             if (!$state && $existing) {
-                                                $earnings = collect($earnings)
+                                                $reimbursements = collect($reimbursements)
                                                     ->reject(fn($item) => $item['id'] === 'adhoc_earning_fund_id' . $fund->id)
                                                     ->values()
                                                     ->toArray();
-                                                $set('ad_hoc_earnings', $earnings);
+                                                $set('fund_reimbursements', $reimbursements);
                                             }
                                         });
-                                })->toArray()
-                            )
+                                })->toArray(),
+                                [
+                                    Forms\Components\Repeater::make('fund_reimbursements')
+                                        ->label('')
+                                        ->schema([
+                                            Forms\Components\Hidden::make('id'),
+                                            Forms\Components\TextInput::make('title')
+                                                ->disabled(),
+                                            Forms\Components\Select::make('value_type')
+                                                ->label('Type')
+                                                ->options([
+                                                    'number' => 'Fixed Amount',
+                                                    'percentage' => 'Percentage',
+                                                ])
+                                                ->disabled(),
+                                            Forms\Components\TextInput::make('amount_input')
+                                                ->label('Amount')
+                                                ->prefix(fn(callable $get) => $get('value_type') === 'percentage' ? '% ' : $currency . ' ')
+                                                ->numeric(),
+                                            Forms\Components\Select::make('tax_status')
+                                                ->label('Tax Status')
+                                                ->options([
+                                                    'taxable' => 'Taxable',
+                                                    'non-taxable' => 'Non-Taxable',
+                                                ])
+                                                ->disabled(),
+                                        ])
+                                        ->columns(4)
+                                        ->reorderable(false)
+                                        ->addable(false)
+                                        ->deletable(false)
+                                        ->columnSpan('full'),
+                                ]
+                            ))
                             ->columns(3)
                             ->visible(fn() => $this->checkFunds())
+                            ->columnSpan(2), // Takes 2 columns
+
+                        // -- Attendance Adjustments --
+                        Forms\Components\Fieldset::make('Attendance Adjustments')
+                            ->schema([
+                                Forms\Components\TextInput::make('overtime_earning_amount')
+                                    ->label('Overtime Minutes Earning')
+                                    ->numeric()
+                                    ->disabled()
+                                    ->prefix(fn($state) => $currency . ' ')
+                                    ->formatStateUsing(fn($state) => round($state)),
+
+                                Forms\Components\Toggle::make('apply_overtime_earnings')->label('Apply'),
+
+                                Forms\Components\TextInput::make('late_deduction_amount')
+                                    ->label('Late Minutes Deduction')
+                                    ->numeric()
+                                    ->disabled()
+                                    ->prefix(fn($state) => $currency . ' ')
+                                    ->formatStateUsing(fn($state) => round($state)),
+
+                                Forms\Components\Toggle::make('deduct_late_penalties')->label('Apply'),
+
+                                Forms\Components\TextInput::make('absent_deduction_amount')
+                                    ->label('Absent Days Deduction')
+                                    ->numeric()
+                                    ->disabled()
+                                    ->prefix(fn($state) => $currency . ' ')
+                                    ->formatStateUsing(fn($state) => round($state)),
+
+                                Forms\Components\Toggle::make('deduct_absent_penalties')->label('Apply'),
+                            ])
+                            ->columns(2)
                             ->columnSpan(2), // Takes 2 columns
 
                         Forms\Components\Fieldset::make('Earnings')
@@ -329,6 +472,9 @@ class EditPayroll extends Page
                                     ->columns(4)
                                     ->reorderable(false)
                                     ->addActionLabel('+ Add an Earning')
+                                    ->deleteAction(
+                                        fn(\Filament\Forms\Components\Actions\Action $action) => $action->hidden(fn(array $arguments, \Filament\Forms\Components\Repeater $component) => str($component->getRawItemState($arguments['item'])['id'])->startsWith('adhoc_earning_fund_id')),
+                                    )
                                     ->columnSpan(2), // Takes 2 columns
                             ])->columnSpan(2),
 
@@ -382,90 +528,6 @@ class EditPayroll extends Page
                                     ->addActionLabel('+ Add a Deduction')
                                     ->columnSpan(2), // Takes 2 columns
                             ])->columnSpan(2),
-
-                        // -- Attendance Adjustments --
-                        Forms\Components\Fieldset::make('Attendance Adjustments')
-                            ->schema([
-                                Forms\Components\TextInput::make('overtime_earning_amount')
-                                    ->label('Overtime Earning')
-                                    ->numeric()
-                                    ->disabled()
-                                    ->prefix(fn($state) => $currency . ' ')
-                                    ->formatStateUsing(fn($state) => round($state)),
-
-                                Forms\Components\Toggle::make('apply_overtime_earnings')->label('Apply'),
-
-                                Forms\Components\TextInput::make('late_deduction_amount')
-                                    ->label('Late Deduction')
-                                    ->numeric()
-                                    ->disabled()
-                                    ->prefix(fn($state) => $currency . ' ')
-                                    ->formatStateUsing(fn($state) => round($state)),
-
-                                Forms\Components\Toggle::make('deduct_late_penalties')->label('Apply'),
-
-                                Forms\Components\TextInput::make('absent_deduction_amount')
-                                    ->label('Absent Deduction')
-                                    ->numeric()
-                                    ->disabled()
-                                    ->prefix(fn($state) => $currency . ' ')
-                                    ->formatStateUsing(fn($state) => round($state)),
-
-                                Forms\Components\Toggle::make('deduct_absent_penalties')->label('Apply'),
-                            ])
-                            ->columns(2)
-                            ->columnSpan(2), // Takes 2 columns
-
-                        // -- Fund Section --
-                        Forms\Components\Fieldset::make('Fund')
-                            ->label('Active Funds')
-                            ->schema([
-                                Repeater::make('fund_data')
-                                    ->label('')
-                                    ->schema([
-                                        Forms\Components\TextInput::make('amount_input')
-                                            ->label(fn(callable $get) => $get('title') ?: 'Amount')
-                                            ->numeric()
-                                            ->minValue(0)
-                                            ->required()
-                                            ->reactive()
-                                            ->disabled()
-                                            ->formatStateUsing(fn($state) => $state !== null ? round($state) : null),
-                                    ])
-                                    ->columns(2)
-                                    ->addable(false)
-                                    ->deletable(false)
-                                    ->reorderable(false),
-                            ])
-                            ->columns(2)
-                            ->visible(fn() => $this->checkFunds())
-                            ->columnSpan(2), // Takes 2 columns
-
-                        Forms\Components\Fieldset::make('Loan Details')
-                            ->schema([
-                                Forms\Components\Placeholder::make('loan_deduction_amount')
-                                    ->label('Amount Deducted')
-                                    ->content(fn() => $currency . ' ' . number_format($this->payroll?->loan_amount ?? 0)),
-
-                                Forms\Components\Placeholder::make('installments_left')
-                                    ->label('Installments Left')
-                                    ->content(function () {
-                                        $totalInstallmentsLeft = 0;
-
-                                        if (!empty($this->payroll->loan_data)) {
-                                            foreach ($this->payroll->loan_data as $loanDeduction) {
-                                                $loan = \App\Models\Loan::find($loanDeduction['loan_id']);
-                                                if ($loan && $loan->installment_amount > 0) {
-                                                    $installments = ceil($loan->remaining_amount / $loan->installment_amount);
-                                                    $totalInstallmentsLeft += max(0, $installments - 1);
-                                                }
-                                            }
-                                        }
-                                        return $totalInstallmentsLeft > 0 ? $totalInstallmentsLeft : 0;
-                                    }),
-                            ])
-                            ->visible(fn() => ($this->payroll?->loan_amount ?? 0) > 0)
-                            ->columnSpan(2), // Takes 2 columns
                     ]),
             ])
             ->statePath('data');
@@ -536,7 +598,10 @@ class EditPayroll extends Page
                 }
             })->toArray();
 
+        $fundReimbursements = $data['fund_reimbursements'] ?? [];
         $adHocEarningsInput = $data['ad_hoc_earnings'] ?? [];
+        $adHocEarningsInput = array_merge($adHocEarningsInput, $fundReimbursements);
+
         $adHocDeductionsInput = $data['ad_hoc_deductions'] ?? [];
 
         $payrollCalculationService = app(PayrollCalculationService::class);

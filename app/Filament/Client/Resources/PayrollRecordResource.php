@@ -269,7 +269,6 @@ class PayrollRecordResource extends Resource
         $monthStartDate = Carbon::parse("1 {$selectedMonth}");
 
         $payrolls = Filament::getTenant()->payrolls()
-            ->select(['id', 'user_id', 'net_payable_salary'])
             ->with(['user:id,name'])
             ->where('status', 1)
             ->whereDate('date_range_start', $monthStartDate)
@@ -288,8 +287,46 @@ class PayrollRecordResource extends Resource
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        // Set headers with styling
-        $headers = ['Employee Name', 'Net Salary'];
+        // Collect all unique earning and deduction titles to create dynamic headers
+        $earningHeaders = [];
+        $deductionHeaders = [];
+
+        foreach ($payrolls as $payroll) {
+            $earnings = array_merge(
+                $payroll->earnings_data['custom_earnings_applied'] ?? [],
+                $payroll->earnings_data['ad_hoc_earnings'] ?? []
+            );
+            foreach ($earnings as $earning) {
+                if (!in_array($earning['title'], $earningHeaders)) {
+                    $earningHeaders[] = $earning['title'];
+                }
+            }
+
+            $deductions = array_merge(
+                $payroll->deductions_data['custom_deductions_applied'] ?? [],
+                $payroll->deductions_data['ad_hoc_deductions'] ?? []
+            );
+            foreach ($deductions as $deduction) {
+                if (!in_array($deduction['title'], $deductionHeaders)) {
+                    $deductionHeaders[] = $deduction['title'];
+                }
+            }
+        }
+
+        // Set headers
+        $headers = [
+            'Employee Name',
+            'Gross Salary',
+            ...$deductionHeaders,
+            'Overtime Earning',
+            'Late Deduction',
+            'Absent Deduction',
+            'Loan Repayment',
+            'Fund Contributions',
+            ...$earningHeaders,
+            'Tax',
+            'Net Salary',
+        ];
         $sheet->fromArray($headers, null, 'A1');
 
         // Style header row
@@ -300,26 +337,67 @@ class PayrollRecordResource extends Resource
                 'startColor' => ['rgb' => 'E2E8F0']
             ]
         ];
-        $sheet->getStyle('A1:B1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:' . $sheet->getHighestColumn() . '1')->applyFromArray($headerStyle);
 
         // Add data
-        $data = $payrolls->map(fn($payroll) => [
-            $payroll->user->name ?? 'N/A',
-            $payroll->net_payable_salary
-        ])->toArray();
+        $data = [];
+        foreach ($payrolls as $payroll) {
+            $row = [];
+            $row[] = $payroll->user->name ?? 'N/A';
+            $row[] = $payroll->base_salary;
+
+            $deductions = array_merge(
+                $payroll->deductions_data['custom_deductions_applied'] ?? [],
+                $payroll->deductions_data['ad_hoc_deductions'] ?? []
+            );
+            $deductionsData = [];
+            foreach ($deductions as $deduction) {
+                $deductionsData[$deduction['title']] = $deduction['amount_input'] ?? $deduction['amount'] ?? 0;
+            }
+
+            foreach ($deductionHeaders as $header) {
+                $row[] = $deductionsData[$header] ?? 0;
+            }
+
+            $row[] = $payroll->attendance_data['overtime_earning_amount'] ?? 0;
+            $row[] = $payroll->attendance_data['late_minutes_deduction_amount'] ?? 0;
+            $row[] = $payroll->attendance_data['absent_deduction_amount'] ?? 0;
+
+            $row[] = $payroll->loan_amount ?? 0;
+            $row[] = collect($payroll->fund_data)->sum('amount_input') ?? 0;
+
+            $earnings = array_merge(
+                $payroll->earnings_data['custom_earnings_applied'] ?? [],
+                $payroll->earnings_data['ad_hoc_earnings'] ?? []
+            );
+            $earningsData = [];
+            foreach ($earnings as $earning) {
+                $earningsData[$earning['title']] = $earning['amount_input'] ?? $earning['amount'] ?? 0;
+            }
+
+            foreach ($earningHeaders as $header) {
+                $row[] = $earningsData[$header] ?? 0;
+            }
+
+            $row[] = $payroll->tax_data['monthly_tax_calculated'] ?? 0;
+            $row[] = round($payroll->net_payable_salary);
+
+            $data[] = $row;
+        }
 
         $sheet->fromArray($data, null, 'A2');
 
         // Auto-size columns
-        foreach (range('A', 'B') as $col) {
+        foreach (range('A', $sheet->getHighestColumn()) as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        // Format salary column as currency
+        // Format currency columns
         $lastRow = count($data) + 1;
-        $sheet->getStyle("B2:B{$lastRow}")
+        $currencyFormat = '#,##0.00';
+        $sheet->getStyle("B2:" . $sheet->getHighestColumn() . $lastRow)
             ->getNumberFormat()
-            ->setFormatCode('#,##0.00');
+            ->setFormatCode($currencyFormat);
 
         $fileName = "Payroll_" . str_replace(' ', '_', $selectedMonth) . ".xlsx";
 
