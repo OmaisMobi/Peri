@@ -58,12 +58,12 @@ class EditPayroll extends Page
         })->all();
 
         $adHocEarnings = collect($adHocEarnings)->map(function ($item) {
-            $item['amount_input'] = $item['amount'] ?? null;
+            $item['amount_input'] = $item['amount_input'] ?? null;
             return $item;
         })->all();
 
         $adHocDeductions = collect($this->payroll->deductions_data['ad_hoc_deductions'] ?? [])->map(function ($item) {
-            $item['amount_input'] = $item['amount'] ?? null;
+            $item['amount_input'] = $item['amount_input'] ?? null;
             return $item;
         })->all();
 
