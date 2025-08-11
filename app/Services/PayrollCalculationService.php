@@ -42,7 +42,8 @@ class PayrollCalculationService
         bool $configDeductLatePenalties = true,
         bool $configDeductAbsentPenalties = true,
         bool $configApplyOvertimeEarnings = true,
-        string $configPenaltyTaxStatus = 'non-taxable'
+        string $configPenaltyTaxStatus = 'non-taxable',
+        string $configEarningTaxStatus = 'taxable'
     ): array {
         $user = Filament::getTenant()->users()->with(['assignedDepartment.department', 'assignedShift.shift'])->where('id', $userId)->first();
         $userBankDetail = $user->bankDetails->first();
@@ -121,12 +122,10 @@ class PayrollCalculationService
         $attendanceEarningsValue = 0.0;
         if ($configApplyOvertimeEarnings) $attendanceEarningsValue += $attendanceFinancialImpacts['overtime_earning_amount'];
 
-        $totalTaxableEarnings = $totalCustomTaxableEarnings + ($configPenaltyTaxStatus === 'taxable' ? $attendanceEarningsValue : 0.0);
+        $totalTaxableEarnings = $totalCustomTaxableEarnings + ($configEarningTaxStatus === 'taxable' ? $attendanceEarningsValue : 0.0);
         $totalTaxableDeductions = $totalCustomTaxableDeductions + ($configPenaltyTaxStatus === 'taxable' ? $attendancePenaltiesValue : 0.0);
         $userBankDetail = $user->bankDetails->first();
-        $totalNonTaxableEarnings = $totalCustomNonTaxableEarnings + ($configPenaltyTaxStatus === 'non-taxable' ? $attendanceEarningsValue : 0.0);
-
-
+        $totalNonTaxableEarnings = $totalCustomNonTaxableEarnings + ($configEarningTaxStatus === 'non-taxable' ? $attendanceEarningsValue : 0.0);
         $totalNonTaxableDeductions = $totalCustomNonTaxableDeductions + ($configPenaltyTaxStatus === 'non-taxable' ? $attendancePenaltiesValue : 0.0);
 
         $loanDeductions = $this->processLoanDeductions($user, $periodStartDate);
@@ -143,7 +142,7 @@ class PayrollCalculationService
             $effectiveMonthIndicator,
             $periodStartDate
         );
-        $netMonthlyPayableSalary = $taxData['monthly_taxable_base']
+        $netMonthlyPayableSalary = $currentPeriodBaseSalary
             + $totalTaxableEarnings
             + $totalNonTaxableEarnings
             - $totalTaxableDeductions
@@ -727,19 +726,26 @@ class PayrollCalculationService
 
         // Sum the actual non-taxable earnings from all previous payrolls.
         // IMPORTANT: Per user instruction, statutory component is NOT a non-taxable earning.
-        $previousMonthsNonTaxableEarningsSum = $previousPayrolls->sum(function ($payroll) {
+        $previousMonthsTaxableEarningsSum = $previousPayrolls->sum(function ($payroll) {
             $sum = 0;
+
+            // Taxable custom earnings
             if (isset($payroll->earnings_data['custom_earnings_applied'])) {
                 foreach ($payroll->earnings_data['custom_earnings_applied'] as $earning) {
-                    if (($earning['tax_status'] ?? 'taxable') === 'non-taxable') {
+                    if (($earning['tax_status'] ?? 'taxable') === 'taxable') {
                         $sum += $earning['calculated_amount'] ?? 0;
                     }
                 }
             }
-            // Non-taxable attendance earnings
-            if (isset($payroll->attendance_data['apply_overtime_earnings']) && $payroll->attendance_data['apply_overtime_earnings']) {
+
+            // Taxable attendance earnings (overtime)
+            if (
+                isset($payroll->attendance_data['apply_overtime_earnings']) &&
+                $payroll->attendance_data['apply_overtime_earnings']
+            ) {
                 $sum += $payroll->attendance_data['overtime_earning_amount'] ?? 0;
             }
+
             return $sum;
         });
 
@@ -774,7 +780,7 @@ class PayrollCalculationService
         $projectedAnnualTaxableBase = $previousMonthsTaxableBaseSum + ($monthlyTaxableBaseForCurrentPeriod * $monthsRemainingInFY);
 
         // Get the total Year-To-Date non-taxable earnings and deductions.
-        $totalYTDEarnings = $previousMonthsNonTaxableEarningsSum + $totalNonTaxableEarningsForCurrentPeriod;
+        $totalYTDEarnings = $previousMonthsTaxableEarningsSum + $totalTaxableEarningsForCurrentPeriod;
         $totalYTDDeductions = $previousMonthsNonTaxableDeductionsSum + $totalNonTaxableDeductionsForCurrentPeriod;
 
         // The final projected salary for tax calculation.
@@ -1128,7 +1134,6 @@ class PayrollCalculationService
             - $totalTaxableDeductions
             - $totalNonTaxableDeductions
             - $taxData['monthly_tax_calculated'];
-
         return [
             'base_salary' => round($baseSalary),
             'applied_increment_amount' => round($appliedIncrementAmount),
