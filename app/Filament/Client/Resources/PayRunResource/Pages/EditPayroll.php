@@ -555,9 +555,9 @@ class EditPayroll extends Page
         return [
             Action::make('back')
                 ->label('Back')
-                ->url(fn() => $this->getResource()::getUrl())
                 ->icon('heroicon-o-arrow-left')
-                ->color('gray'),
+                ->color('gray')
+                ->extraAttributes(['onclick' => 'history.back()']),
         ];
     }
     protected function getFormActions(): array
