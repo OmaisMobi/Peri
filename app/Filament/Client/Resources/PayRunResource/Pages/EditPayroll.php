@@ -53,7 +53,8 @@ class EditPayroll extends Page
         $adHocEarnings = $adHocEarnings->reject(fn($item) => str($item['id'])->startsWith('adhoc_earning_fund_id'))->values()->all();
 
         $fundReimbursements = collect($fundReimbursements)->map(function ($item) {
-            $item['amount_input'] = $item['amount'] ?? null;
+            $item['amount_input'] = $item['amount_input'] ?? null;
+            $item['tax_status'] = $item['tax_status'] ?? 'taxable'; // Ensure tax_status is always present
             return $item;
         })->all();
 
@@ -347,7 +348,7 @@ class EditPayroll extends Page
                                         ->schema([
                                             Forms\Components\Hidden::make('id'),
                                             Forms\Components\TextInput::make('title')
-                                                ->disabled(),
+                                                ->readOnly(),
                                             Forms\Components\Select::make('value_type')
                                                 ->label('Type')
                                                 ->options([
@@ -364,8 +365,7 @@ class EditPayroll extends Page
                                                 ->options([
                                                     'taxable' => 'Taxable',
                                                     'non-taxable' => 'Non-Taxable',
-                                                ])
-                                                ->disabled(),
+                                                ]),
                                         ])
                                         ->columns(4)
                                         ->reorderable(false)
@@ -444,7 +444,7 @@ class EditPayroll extends Page
                                             ->label('Type')
                                             ->options([
                                                 'number' => 'Fixed Amount',
-                                                'percentage' => 'Percentage',
+                                                'percentage' => 'Percentage of gross salary',
                                             ])
                                             ->default('number')
                                             ->required()
@@ -507,7 +507,7 @@ class EditPayroll extends Page
                                             ->label('Type')
                                             ->options([
                                                 'number' => 'Fixed Amount',
-                                                'percentage' => 'Percentage',
+                                                'percentage' => 'Percentage of gross salary',
                                             ])
                                             ->default('number')
                                             ->required()
@@ -522,8 +522,18 @@ class EditPayroll extends Page
                                                 return $get('value_type') === 'percentage' ? '%' : $currency;
                                             })
                                             ->reactive(),
+
+                                        Forms\Components\Select::make('tax_status')
+                                            ->label('Tax Status')
+                                            ->options([
+                                                'taxable' => 'Taxable',
+                                                'non-taxable' => 'Non-Taxable',
+                                            ])
+                                            ->required()
+                                            ->default('taxable')
+                                            ->columnSpan(1),
                                     ])
-                                    ->columns(3)
+                                    ->columns(4)
                                     ->reorderable(false)
                                     ->addActionLabel('+ Add a Deduction')
                                     ->columnSpan(2), // Takes 2 columns
