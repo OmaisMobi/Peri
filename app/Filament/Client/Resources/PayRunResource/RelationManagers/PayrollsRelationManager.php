@@ -76,6 +76,13 @@ class PayrollsRelationManager extends RelationManager
                             ])
                     ),
 
+                // Static "Skipped" label for trashed records
+                Action::make('skipped')
+                    ->label('Skipped')
+                    ->color('danger')
+                    ->disabled()
+                    ->visible(fn($record): bool => $record->trashed()),
+
                 Tables\Actions\DeleteAction::make()
                     ->label('Skip')
                     ->tooltip('Skip employee from this payroll')
