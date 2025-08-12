@@ -102,13 +102,24 @@ class PayrollsRelationManager extends RelationManager
                     })
                     ->deselectRecordsAfterCompletion()
                     ->visible(fn(): bool => !in_array($this->getOwnerRecord()->status, ['pending_approval', 'finalized'])),
-                Tables\Actions\RestoreBulkAction::make()
-                    ->label('Add Back Selected')
-                    ->color('info')
-                    ->requiresConfirmation()
-                    ->modalHeading('Add selected employee(s) to payroll?')
-                    ->modalButton('Yes, Add Back')
-                    ->visible(fn(): bool => !in_array($this->getOwnerRecord()->status, ['pending_approval', 'finalized'])),
+                // Tables\Actions\RestoreBulkAction::make()
+                //     ->label('Add Back Selected')
+                //     ->color('info')
+                //     ->requiresConfirmation()
+                //     ->modalHeading('Add selected employee(s) to payroll?')
+                //     ->modalButton('Yes, Add Back')
+                //     ->visible(fn(): bool => !in_array($this->getOwnerRecord()->status, ['pending_approval', 'finalized']))
+                //     ->action(function ($records) {
+                //         $addedCount = 0;
+                //         foreach ($records as $record) {
+                //             if (!in_array($record->payRun->status ?? null, ['pending_approval', 'finalized'])) {
+                //                 $record->restore();
+                //                 $addedCount++;
+                //             }
+                //         }
+                //         Notification::make()->success()->title('Restored Employees')->body("Successfully added {$addedCount} employee(s) to this payroll.")->send();
+                //     })
+                //     ->deselectRecordsAfterCompletion(),
 
             ]);
     }
