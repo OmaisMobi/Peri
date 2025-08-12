@@ -108,7 +108,8 @@ class PayrollCalculationService
             $baseSalaryForCalculations,
             $customEarningsInput,
             $customDeductionsInput,
-            $periodStartDate
+            $periodStartDate,
+            $currentPeriodBaseSalary
         );
         $totalCustomTaxableEarnings = $processedComponents['total_taxable_earnings'];
         $totalCustomNonTaxableEarnings = $processedComponents['total_non_taxable_earnings'];
@@ -462,7 +463,8 @@ class PayrollCalculationService
         float $baseSalary,
         array $customEarningsInput,
         array $customDeductionsInput,
-        Carbon $periodStartDate
+        Carbon $periodStartDate,
+        float $rawSalaryForFunds = null
     ): array {
         $teamId = Filament::getTenant()->id;
         if ($teamId === null || !is_int($teamId)) {
@@ -510,7 +512,7 @@ class PayrollCalculationService
         foreach ($customEarningsInput as $earning) {
             $calculatedAmount = round($earning['type'] === 'percentage' ? ($baseSalary * ((float)($earning['amount'] ?? 0) / 100)) : (float)($earning['amount'] ?? 0));
             $finalCustomEarningsApplied[] = [
-                'title' => $earning['title'],
+                'title' => $earning['title'] ?? '',
                 'amount_input' => (float)($earning['amount'] ?? 0),
                 'type' => $earning['type'],
                 'tax_status' => $earning['tax_status'],
@@ -527,7 +529,7 @@ class PayrollCalculationService
             $calculatedAmount = $deduction['type'] === 'percentage' ? ($baseSalary * ((float)($deduction['amount'] ?? 0) / 100)) : (float)($deduction['amount'] ?? 0);
             $isOneTime = $deduction['is_one_time_deduction'] ?? false;
             $finalCustomDeductionsApplied[] = [
-                'title' => $deduction['title'],
+                'title' => $deduction['title'] ?? '',
                 'amount_input' => (float)($deduction['amount'] ?? 0),
                 'type' => $deduction['type'],
                 'tax_status' => 'non-taxable',
@@ -543,15 +545,21 @@ class PayrollCalculationService
         $user_funds = $user->funds()
             ->wherePivot('team_id', Filament::getTenant()->id)
             ->get();
+
         $finalFundApplied = [];
+
+        // Use raw salary for funds if provided, otherwise fallback to adjusted salary
+        $salaryForFundCalculation = $rawSalaryForFunds ?? $baseSalary;
+
         foreach ($user_funds as $fund) {
-            if ($baseSalary > 0) {
-                $matchedBracket = collect($fund->brackets)->first(function ($bracket) use ($baseSalary) {
-                    return $baseSalary >= $bracket['min_annual_salary'] && $baseSalary <= $bracket['max_annual_salary'];
+            if ($salaryForFundCalculation > 0) {  // CHANGED: Use raw salary instead of adjusted
+                $matchedBracket = collect($fund->brackets)->first(function ($bracket) use ($salaryForFundCalculation) {
+                    return $salaryForFundCalculation >= $bracket['min_annual_salary'] && $salaryForFundCalculation <= $bracket['max_annual_salary'];
                 });
+
                 if ($matchedBracket) {
                     if ($matchedBracket['type'] === 'percentage') {
-                        $amount = ($baseSalary * $matchedBracket['percentage']) / 100;
+                        $amount = ($salaryForFundCalculation * $matchedBracket['percentage']) / 100;  // CHANGED: Use raw salary
                     } elseif ($matchedBracket['type'] === 'fixed_amount') {
                         $amount = $matchedBracket['fixed_amount'];
                     } else {
@@ -568,7 +576,8 @@ class PayrollCalculationService
                         'tax_status' => $taxStatus,
                         'calculated_amount' => $amount,
                         'id' => $fund->id,
-                        'is_one_time_deduction' => false
+                        'is_one_time_deduction' => false,
+                        'salary_used_for_calculation' => $salaryForFundCalculation  // OPTIONAL: For debugging/transparency
                     ];
 
                     // Add to the correct deductions total
@@ -961,16 +970,16 @@ class PayrollCalculationService
             $calculatedAmount = round($adHocEarning['value_type'] === 'percentage' ? ($baseSalaryForRecalculationCalculations * ($amount / 100)) : $amount);
             $adHocEarningsCalculated[] = [
                 'id' => $adHocEarning['id'] ?? uniqid('adhoc_earning_'),
-                'name' => Str::slug($adHocEarning['title']),
-                'title' => $adHocEarning['title'],
+                'name' => Str::slug($adHocEarning['title'] ?? ''), // Provide a default empty string
+                'title' => $adHocEarning['title'] ?? '', // Provide a default empty string
                 'type' => 'earning',
                 'value_type' => $adHocEarning['value_type'],
-                'tax_status' => $adHocEarning['tax_status'],
+                'tax_status' => $adHocEarning['tax_status'] ?? 'taxable', // Added default 'taxable'
                 'amount_input' => $amount,
                 'calculated_amount' => $calculatedAmount,
                 'is_one_time_deduction' => false,
             ];
-            if ($adHocEarning['tax_status'] === 'taxable') {
+            if (($adHocEarning['tax_status'] ?? 'taxable') === 'taxable') { // Add default 'taxable'
                 $totalAdHocTaxableEarnings += $calculatedAmount;
             } else {
                 $totalAdHocNonTaxableEarnings += $calculatedAmount;
@@ -1024,25 +1033,35 @@ class PayrollCalculationService
                 'title' => $adHocDeduction['title'],
                 'type' => 'deduction',
                 'value_type' => $adHocDeduction['value_type'],
-                'tax_status' => 'non-taxable',
+                'tax_status' => $adHocDeduction['tax_status'] ?? 'non-taxable',
                 'amount_input' => $amount,
                 'calculated_amount' => $calculatedAmount,
                 'is_one_time_deduction' => true,
             ];
-            $totalAdHocNonTaxableDeductions += $calculatedAmount;
+            if (($adHocDeduction['tax_status'] ?? 'non-taxable') === 'taxable') {
+                $totalAdHocTaxableDeductions += $calculatedAmount;
+            } else {
+                $totalAdHocNonTaxableDeductions += $calculatedAmount;
+            }
         }
         $user_funds = $user->funds()
             ->wherePivot('team_id', Filament::getTenant()->id)
             ->get();
+
         $finalFundApplied = [];
+
+        // Use the raw salary (with increment if applied) for fund calculations
+        $salaryForFundCalculation = $baseSalary;  // This is the raw salary with increment in recalculation
+
         foreach ($user_funds as $fund) {
-            if ($baseSalary > 0) {
-                $matchedBracket = collect($fund->brackets)->first(function ($bracket) use ($baseSalary) {
-                    return $baseSalary >= $bracket['min_annual_salary'] && $baseSalary <= $bracket['max_annual_salary'];
+            if ($salaryForFundCalculation > 0) {  // CHANGED: Use raw salary instead of adjusted
+                $matchedBracket = collect($fund->brackets)->first(function ($bracket) use ($salaryForFundCalculation) {
+                    return $salaryForFundCalculation >= $bracket['min_annual_salary'] && $salaryForFundCalculation <= $bracket['max_annual_salary'];
                 });
+
                 if ($matchedBracket) {
                     if ($matchedBracket['type'] === 'percentage') {
-                        $amount = ($baseSalary * $matchedBracket['percentage']) / 100;
+                        $amount = ($salaryForFundCalculation * $matchedBracket['percentage']) / 100;  // CHANGED: Use raw salary
                     } elseif ($matchedBracket['type'] === 'fixed_amount') {
                         $amount = $matchedBracket['fixed_amount'];
                     } else {
@@ -1064,9 +1083,9 @@ class PayrollCalculationService
 
                     // Add to the correct deductions total
                     if ($taxStatus === 'taxable') {
-                        $totalAdHocTaxableDeductions += $amount;
+                        $totalAdHocTaxableDeductions += $amount;  // Note: Different variable name in recalculation
                     } else {
-                        $totalAdHocNonTaxableDeductions += $amount;
+                        $totalAdHocNonTaxableDeductions += $amount;  // Note: Different variable name in recalculation
                     }
                 }
             }
