@@ -325,7 +325,7 @@ class EditPayroll extends Page
                                             if ($state && !$existing) {
                                                 $reimbursements[] = [
                                                     'id' => 'adhoc_earning_fund_id' . $fund->id,
-                                                    'title' => $fund->name,
+                                                    'title' => $fund->name . ' Reimbursement',
                                                     'value_type' => 'number',
                                                     'amount_input' => Helper::getEmployeeDeductedFund($this->payroll->user, $fund),
                                                     'tax_status' => 'taxable',
@@ -555,9 +555,9 @@ class EditPayroll extends Page
         return [
             Action::make('back')
                 ->label('Back')
-                ->url(fn() => $this->getResource()::getUrl())
                 ->icon('heroicon-o-arrow-left')
-                ->color('gray'),
+                ->color('gray')
+                ->extraAttributes(['onclick' => 'history.back()']),
         ];
     }
     protected function getFormActions(): array
