@@ -336,7 +336,8 @@ class PayrollRecordResource extends Resource
             $headers[] = 'Loan Repayment';
         }
 
-        $headers = array_merge($headers,
+        $headers = array_merge(
+            $headers,
             [
                 ...$fundHeaders, // Replaced 'Fund Contributions' with individual fund headers
                 ...$earningHeaders,
@@ -446,7 +447,7 @@ class PayrollRecordResource extends Resource
         $user = Auth::user();
 
         // Check permissions first (cheaper query)
-        if (!($user->hasRole('Admin') || $user->can('payroll.approve'))) {
+        if (!($user->hasRole('Admin') || $user->can('payroll.manage'))) {
             return false;
         }
 

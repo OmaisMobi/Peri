@@ -119,7 +119,7 @@ class PayRunResource extends Resource
     {
         return $table
             ->heading('Regular Payroll')
-            ->emptyStateHeading('No ongoing payroll')
+            ->emptyStateHeading('No payroll pending')
             ->columns([
                 Tables\Columns\TextColumn::make('period_display')
                     ->label('Period')

@@ -35,7 +35,7 @@
         }
 
         .section-title {
-            font-size: 20px;
+            font-size: 16px;
             margin-bottom: 15px;
             border-bottom: 2px solid #eee;
             padding-bottom: 8px;
@@ -338,17 +338,13 @@
                 </tbody>
             </table>
             <table class="totals-table">
-                <thead>
-                    <tr>
-                        <th>Net Pay</th>
-                    </tr>
-                </thead>
                 <tbody>
                     <tr>
+                        <td>Net Pay</td>
                         <td>{{ $symbol }}{{ number_format($payroll->net_payable_salary) }}</td>
                     </tr>
                     <tr>
-                        <td>{{ numberToWords($payroll->net_payable_salary, $symbol) }}</td>
+                        <td colspan="2">{{ numberToWords($payroll->net_payable_salary, $symbol) }}</td>
                     </tr>
                 </tbody>
             </table>

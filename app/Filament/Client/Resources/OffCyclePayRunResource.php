@@ -44,6 +44,7 @@ class OffCyclePayRunResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('No ongoing payment')
             ->columns([
                 Tables\Columns\TextColumn::make('period_display')
                     ->label('Period')
