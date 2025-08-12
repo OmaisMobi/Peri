@@ -49,7 +49,17 @@ class PayrollsRelationManager extends RelationManager
                 ViewAction::make('viewPayroll')
                     ->label('View')
                     ->url(fn($record) => route('payslip.show', $record), shouldOpenInNewTab: true)
-                    ->visible(fn(): bool => $this->getOwnerRecord()->status === 'pending_approval' || $this->getOwnerRecord()->status === 'draft' || $this->getOwnerRecord()->status === 'rejected' || $this->getOwnerRecord()->status === 'finalized'),
+                    ->visible(
+                        fn($record): bool =>
+                        !$record->trashed() &&
+                            in_array($this->getOwnerRecord()->status, [
+                                'pending_approval',
+                                'draft',
+                                'rejected',
+                                'finalized',
+                            ])
+                    ),
+
                 Action::make('edit')
                     ->label('Edit')
                     ->icon('heroicon-m-pencil-square')
@@ -57,7 +67,15 @@ class PayrollsRelationManager extends RelationManager
                         'payrun' => $record->pay_run_id,
                         'record' => $record->id,
                     ]))
-                    ->visible(fn(): bool => $this->getOwnerRecord()->status === 'draft' || $this->getOwnerRecord()->status === 'rejected'),
+                    ->visible(
+                        fn($record): bool =>
+                        !$record->trashed() &&
+                            in_array($this->getOwnerRecord()->status, [
+                                'draft',
+                                'rejected',
+                            ])
+                    ),
+
                 Tables\Actions\DeleteAction::make()
                     ->label('Skip')
                     ->tooltip('Skip employee from this payroll')
@@ -69,7 +87,7 @@ class PayrollsRelationManager extends RelationManager
                     ->modalButton('Yes, Skip')
                     ->visible(fn(): bool => !in_array($this->getOwnerRecord()->status, ['pending_approval', 'finalized'])),
                 Tables\Actions\RestoreAction::make()
-                    ->label('Add Back')
+                    ->label('Add to Payroll')
                     ->tooltip('Add employee to this payroll')
                     ->color('info')
                     ->requiresConfirmation()
