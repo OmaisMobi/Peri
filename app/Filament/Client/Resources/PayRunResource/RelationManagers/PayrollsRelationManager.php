@@ -81,7 +81,7 @@ class PayrollsRelationManager extends RelationManager
                     ->label('Skipped')
                     ->color('danger')
                     ->disabled()
-                    ->visible(fn($record): bool => $record->trashed()),
+                    ->visible(fn($record): bool => $record->trashed() && !in_array($this->getOwnerRecord()->status, ['draft', 'rejected'])),
 
                 Tables\Actions\DeleteAction::make()
                     ->label('Skip')
