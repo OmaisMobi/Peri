@@ -32,8 +32,8 @@ class PayrollsRelationManager extends RelationManager
 
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('user_id')->label('ID'),
-                Tables\Columns\TextColumn::make('user.name')->label('Employee')->searchable(),
+                Tables\Columns\TextColumn::make('user_id')->label('Employee ID'),
+                Tables\Columns\TextColumn::make('user.name')->label('Name')->searchable(),
                 Tables\Columns\TextColumn::make('base_salary')->label('Gross Salary')->formatStateUsing(fn($state) => $currency . ' ' . number_format($state ?? 0)),
                 Tables\Columns\TextColumn::make('total_earnings')->label('Earnings')->formatStateUsing(fn($state) => $currency . ' ' . number_format($state ?? 0)),
                 Tables\Columns\TextColumn::make('total_deductions')->label('Deductions')->formatStateUsing(fn($state) => $currency . ' ' . number_format($state ?? 0)),
