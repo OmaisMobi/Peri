@@ -69,12 +69,17 @@ class PayrollsRelationManager extends RelationManager
                     ->modalButton('Yes, Skip')
                     ->visible(fn(): bool => !in_array($this->getOwnerRecord()->status, ['pending_approval', 'finalized'])),
                 Tables\Actions\RestoreAction::make()
-                    ->label('Restore')
-                    ->tooltip('Restore employee to this payroll')
+                    ->label('Add Back')
+                    ->tooltip('Add employee to this payroll')
                     ->color('info')
                     ->requiresConfirmation()
-                    ->modalHeading('Restore employee to this payroll?')
-                    ->modalButton('Yes, Restore'),
+                    ->modalHeading('Add employee to this payroll?')
+                    ->modalButton('Yes, Add Back')
+                    ->visible(
+                        fn($record): bool =>
+                        $record->trashed()
+                            && !in_array($this->getOwnerRecord()->status, ['pending_approval', 'finalized'])
+                    ),
             ])
             ->bulkActions([
                 Tables\Actions\BulkAction::make('bulkSkipPayroll')
@@ -98,11 +103,13 @@ class PayrollsRelationManager extends RelationManager
                     ->deselectRecordsAfterCompletion()
                     ->visible(fn(): bool => !in_array($this->getOwnerRecord()->status, ['pending_approval', 'finalized'])),
                 Tables\Actions\RestoreBulkAction::make()
-                    ->label('Restore Selected')
+                    ->label('Add Back Selected')
                     ->color('info')
                     ->requiresConfirmation()
-                    ->modalHeading('Restore selected employee(s) from payroll?')
-                    ->modalButton('Yes, Restore'),
+                    ->modalHeading('Add selected employee(s) to payroll?')
+                    ->modalButton('Yes, Add Back')
+                    ->visible(fn(): bool => !in_array($this->getOwnerRecord()->status, ['pending_approval', 'finalized'])),
+
             ]);
     }
 }
