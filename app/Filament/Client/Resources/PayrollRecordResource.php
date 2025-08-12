@@ -290,6 +290,8 @@ class PayrollRecordResource extends Resource
         // Collect all unique earning and deduction titles to create dynamic headers
         $earningHeaders = [];
         $deductionHeaders = [];
+        $fundHeaders = []; // Added for individual fund names
+        $hasLoanRepayments = false; // Flag to check for loan repayments
 
         foreach ($payrolls as $payroll) {
             $earnings = array_merge(
@@ -311,6 +313,13 @@ class PayrollRecordResource extends Resource
                     $deductionHeaders[] = $deduction['title'];
                 }
             }
+
+            // Collect unique fund names
+            foreach ($payroll->fund_data ?? [] as $fund) {
+                if (!in_array($fund['title'], $fundHeaders)) {
+                    $fundHeaders[] = $fund['title'];
+                }
+            }
         }
 
         // Set headers
@@ -321,12 +330,20 @@ class PayrollRecordResource extends Resource
             'Overtime Earning',
             'Late Deduction',
             'Absent Deduction',
-            'Loan Repayment',
-            'Fund Contributions',
-            ...$earningHeaders,
-            'Tax',
-            'Net Salary',
         ];
+
+        if ($hasLoanRepayments) {
+            $headers[] = 'Loan Repayment';
+        }
+
+        $headers = array_merge($headers,
+            [
+                ...$fundHeaders, // Replaced 'Fund Contributions' with individual fund headers
+                ...$earningHeaders,
+                'Tax',
+                'Net Salary',
+            ]
+        );
         $sheet->fromArray($headers, null, 'A1');
 
         // Style header row
@@ -363,8 +380,18 @@ class PayrollRecordResource extends Resource
             $row[] = $payroll->attendance_data['late_minutes_deduction_amount'] ?? 0;
             $row[] = $payroll->attendance_data['absent_deduction_amount'] ?? 0;
 
-            $row[] = $payroll->loan_amount ?? 0;
-            $row[] = collect($payroll->fund_data)->sum('amount_input') ?? 0;
+            if ($hasLoanRepayments) { // Conditionally add loan repayment
+                $row[] = $payroll->loan_amount ?? 0;
+            }
+
+            // Individual fund amounts
+            $fundsData = [];
+            foreach ($payroll->fund_data ?? [] as $fund) {
+                $fundsData[$fund['title']] = $fund['amount_input'] ?? $fund['amount'] ?? 0;
+            }
+            foreach ($fundHeaders as $header) {
+                $row[] = $fundsData[$header] ?? 0;
+            }
 
             $earnings = array_merge(
                 $payroll->earnings_data['custom_earnings_applied'] ?? [],
@@ -379,7 +406,7 @@ class PayrollRecordResource extends Resource
                 $row[] = $earningsData[$header] ?? 0;
             }
 
-            $row[] = $payroll->tax_data['monthly_tax_calculated'] ?? 0;
+            $row[] = (string)($payroll->tax_data['monthly_tax_calculated'] ?? 0);
             $row[] = round($payroll->net_payable_salary);
 
             $data[] = $row;
