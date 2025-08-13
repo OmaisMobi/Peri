@@ -78,7 +78,6 @@ class PayrollsRelationManager extends RelationManager
 
                 // Static "Skipped" label for trashed records
                 Action::make('skipped')
-                    ->label('Skipped')
                     ->color('danger')
                     ->disabled()
                     ->visible(fn($record): bool => $record->trashed() && !in_array($this->getOwnerRecord()->status, ['draft', 'rejected'])),
