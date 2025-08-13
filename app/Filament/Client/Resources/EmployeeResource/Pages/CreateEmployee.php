@@ -18,17 +18,17 @@ class CreateEmployee extends CreateRecord
     protected function afterCreate(): void
     {
         $roles = [];
-        if (isset($this->data['role'])) {
-            $roles[] = Role::find($this->data['role']);
-        }
+        // if (isset($this->data['role'])) {
+        //     $roles[] = Role::find($this->data['role']);
+        // }
 
-        $allEmployeesRole = Role::where('assignment', 'all')
-                                ->where('team_id', Filament::getTenant()->id)
-                                ->first();
+        // $allEmployeesRole = Role::where('assignment', 'all')
+        //     ->where('team_id', Filament::getTenant()->id)
+        //     ->first();
 
-        if ($allEmployeesRole) {
-            $roles[] = $allEmployeesRole;
-        }
+        // if ($allEmployeesRole) {
+        //     $roles[] = $allEmployeesRole;
+        // }
 
         // Filter out nulls and get unique roles
         $uniqueRoles = collect($roles)->filter()->unique('id');
@@ -65,13 +65,12 @@ class CreateEmployee extends CreateRecord
         $bankDetails = $this->data['bank_details'] ?? [];
         $paymentMethod = $bankDetails['payment_method'] ?? null;
         $bankDetails['base_salary'] = $bankDetails['base_salary'] !== '' ? $bankDetails['base_salary'] : null;
-        
+
 
         if ($paymentMethod !== 'bank_transfer') {
             $bankDetails['account_holder_name'] = null;
             $bankDetails['account_number'] = null;
             $bankDetails['bank_name'] = null;
-            
         }
 
         $this->record->bankDetails()->updateOrCreate(
@@ -82,6 +81,17 @@ class CreateEmployee extends CreateRecord
         $fundIds = $this->data['funds_ids'] ?? [];
         foreach ($fundIds as $fundId) {
             $this->record->funds()->attach($fundId, ['team_id' => $tenant->id]);
+        }
+
+        $rolesToUpdate = Role::where('team_id', $tenant->id)
+            ->where('assignment', 'all')
+            ->get();
+
+        foreach ($rolesToUpdate as $role) {
+            $assignedUsers = $role->assigned_users ?? [];
+            $assignedUsers[] = $this->record->id;
+            $role->assigned_users = $assignedUsers;
+            $role->save();
         }
     }
 
