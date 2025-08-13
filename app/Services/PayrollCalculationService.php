@@ -336,7 +336,7 @@ class PayrollCalculationService
             Log::warning("PayrollCalculationService: \$leaveBalances is null or not iterable for user {$user->id} in calculateAttendanceSummary.");
         }
 
-        $summary['actual_working_days'] -= ($summary['paid_leave_days_count'] + $summary['unpaid_leave_days_count']);
+        //         $summary['actual_working_days'] = (float)$initialWorkingDays;
 
         for ($currentDay = $startDate->copy(); $currentDay->lte($endDate); $currentDay->addDay()) {
             if ($employeeJoiningDate && $currentDay->lt($employeeJoiningDate)) continue;
