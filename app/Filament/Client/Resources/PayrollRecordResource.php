@@ -64,8 +64,11 @@ class PayrollRecordResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('user_id')
+                    ->label('Employee ID'),
+
                 TextColumn::make('user.name')
-                    ->label('Employee'),
+                    ->label('Name'),
 
                 TextColumn::make('user.assignedDepartment.department.name')
                     ->label('Department'),
@@ -81,6 +84,7 @@ class PayrollRecordResource extends Resource
                     ->label('Net Pay')
                     ->formatStateUsing(fn($state) => self::formatCurrency($state)),
             ])
+            ->defaultSort('user_id', 'asc')
             ->groups([
                 Group::make('date_range_start')
                     ->label('')
@@ -455,7 +459,6 @@ class PayrollRecordResource extends Resource
             ->where('status', 1)
             ->exists();
     }
-
 
     public static function getDownloadAllPdfsForPeriodHeaderAction(): Action
     {
