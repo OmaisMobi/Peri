@@ -53,12 +53,13 @@ class FilamentPaymentsServiceProvider extends ServiceProvider
             $this->PaymentPage($data, ChangePlan::class);
         });
         FilamentSubscriptions::afterSubscription(function ($data) {
-            $team_name = Team::find($data['team_id'])?->name ?? 'Unknown Team';
-            User::where('is_super_admin', true)->get()->each(function ($user) use ($team_name) {
+            $team = Team::find($data['team_id']) ?? 'Unknown Team';
+            $team->planSubscription('main')->recordFeatureUsage('listings', 9, false);
+            User::where('is_super_admin', true)->get()->each(function ($user) use ($team) {
                 Notification::make()
                     ->title('New Subscription')
                     ->success()
-                    ->body("New subscription for " . $team_name . " has been successfully created.")
+                    ->body("New subscription for " . $team->name . " has been successfully created.")
                     ->sendToDatabase($user, isEventDispatched: true);
             });
             Notification::make()

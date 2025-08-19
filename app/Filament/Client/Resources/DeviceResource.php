@@ -2,6 +2,7 @@
 
 namespace App\Filament\Client\Resources;
 
+use App\Facades\Helper;
 use App\Filament\Client\Resources\DeviceResource\Pages;
 use App\Models\Device;
 use Filament\Forms\Components\Card;
@@ -96,7 +97,7 @@ class DeviceResource extends Resource implements HasKnowledgeBase
 
     public static function canViewAny(): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin'));
+        return Auth::check() && (Auth::user()->hasRole('Admin')) && Helper::has_feature('attendance');
     }
 
     public static function canCreate(): bool

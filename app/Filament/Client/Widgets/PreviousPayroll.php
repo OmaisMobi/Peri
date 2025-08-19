@@ -2,6 +2,7 @@
 
 namespace App\Filament\Client\Widgets;
 
+use App\Facades\Helper;
 use Filament\Widgets\Widget;
 use Filament\Facades\Filament;
 use Illuminate\Support\Carbon;
@@ -34,9 +35,9 @@ class PreviousPayroll extends Widget
         $hasPayrollPermission = $user->can('payroll.manage');
 
         if (
-            $hasAdminRole ||
+            ($hasAdminRole ||
             $hasPayrollRole ||
-            $hasPayrollPermission
+            $hasPayrollPermission) && Helper::has_feature('payroll')
         ) {
             return true;
         }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Client\Resources;
 
+use App\Facades\Helper;
 use App\Filament\Client\Resources\LoanResource\Pages;
 use App\Models\Loan;
 use Filament\Facades\Filament;
@@ -239,7 +240,7 @@ class LoanResource extends Resource
         return Auth::check() && (
             Auth::user()->hasRole('Admin') || Auth::user()->hasRole('Payroll Manager') ||
             Auth::user()->can('payroll.manage')
-        );
+        ) && Helper::has_feature('payroll');
     }
 
     public static function canCreate(): bool

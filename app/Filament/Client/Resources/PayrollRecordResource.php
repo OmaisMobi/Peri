@@ -2,6 +2,7 @@
 
 namespace App\Filament\Client\Resources;
 
+use App\Facades\Helper;
 use App\Filament\Client\Resources\PayrollRecordResource\Pages;
 use App\Models\Payroll;
 use Carbon\Carbon;
@@ -585,6 +586,6 @@ class PayrollRecordResource extends Resource
             Auth::user()->can('payroll.viewRecords') ||
             Auth::user()->can('payroll.manage') ||
             Auth::user()->can('payroll.approve')
-        );
+        ) && Helper::has_feature('payroll');
     }
 }

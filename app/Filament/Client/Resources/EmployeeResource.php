@@ -2,6 +2,7 @@
 
 namespace App\Filament\Client\Resources;
 
+use App\Facades\Helper;
 use App\Models\User;
 use App\Filament\Client\Resources\EmployeeResource\Pages;
 use Filament\Resources\Resource;
@@ -614,12 +615,24 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
     // Authorization Methods
     public static function canViewAny(): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin', 'web') || Auth::user()->can('employees.view')  || Auth::user()->can('employees.manage') || Auth::user()->hasRole('CEO') || Auth::user()->hasRole('AMS Manager'));
+        return Auth::check() &&
+        (
+            Auth::user()->hasRole('Admin', 'web') 
+            || Auth::user()->can('employees.view')  
+            || Auth::user()->can('employees.manage') 
+            || Auth::user()->hasRole('CEO') 
+            || Auth::user()->hasRole('AMS Manager')
+        ) && Helper::has_feature('employees');
     }
 
     public static function canCreate(): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin', 'web') || Auth::user()->can('employees.manage') || Auth::user()->hasRole('CEO') || Auth::user()->hasRole('AMS Manager'));
+        return Auth::check() && (
+            Auth::user()->hasRole('Admin', 'web') || 
+            Auth::user()->can('employees.manage') || 
+            Auth::user()->hasRole('CEO') || 
+            Auth::user()->hasRole('AMS Manager')
+        ) && Helper::is_module_allowed('employees');
     }
 
     public static function canEdit($record): bool

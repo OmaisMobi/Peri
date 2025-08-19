@@ -109,18 +109,12 @@ class RegisterTeam extends RegisterTenant
 
         $amsRole->givePermissionTo([
             'employees.manage',
-            'departments.manage',
-            'device.manage',
-            'leaveType.manage',
-            'attendancePolicies.manage',
-            'shifts.manage',
             'biometric.approve',
             'holiday.manage',
         ]);
 
         $payrollRole->givePermissionTo([
             'employees.manage',
-            'departments.manage',
             'payroll.approve',
             'payroll.manage'
         ]);

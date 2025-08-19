@@ -2,6 +2,7 @@
 
 namespace App\Filament\Client\Resources;
 
+use App\Facades\Helper;
 use App\Filament\Client\Resources\PayRunResource\Pages;
 use App\Filament\Client\Resources\PayRunResource\RelationManagers;
 use App\Filament\Client\Resources\PayRunResource\RelationManagers\PayrollsRelationManager;
@@ -257,6 +258,6 @@ class PayRunResource extends Resource
             Auth::user()->hasRole('Payroll Manager') ||
             Auth::user()->can('payroll.manage') ||
             Auth::user()->can('payroll.approve')
-        );
+        ) && Helper::has_feature('payroll');
     }
 }

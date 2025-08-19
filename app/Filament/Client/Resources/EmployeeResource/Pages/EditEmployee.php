@@ -33,7 +33,14 @@ class EditEmployee extends EditRecord
             Actions\DeleteAction::make('detach')
                 ->label('Delete Account')
                 ->action(fn() => Filament::getTenant()->members()->detach($this->record))
-                ->after(fn() => redirect($this->getResource()::getUrl('index'))),
+                ->after(function () {
+                    $tenant = \Filament\Facades\Filament::getTenant();
+                    $subscription = $tenant->activePlanSubscriptions()->first();
+                    if ($subscription) {
+                        $subscription->reduceFeatureUsage('employees');
+                    }
+                    redirect($this->getResource()::getUrl('index'));
+                }),
         ];
     }
 
@@ -104,14 +111,13 @@ class EditEmployee extends EditRecord
 
         $bankDetails = $this->data['bank_details'] ?? [];
         $bankDetails['base_salary'] = $bankDetails['base_salary'] !== '' ? $bankDetails['base_salary'] : null;
-        
+
 
         if (($bankDetails['payment_method'] ?? null) !== 'bank_transfer') {
             $bankDetails['account_holder_name'] = null;
             $bankDetails['account_number'] = null;
             $bankDetails['bank_name'] = null;
             $bankDetails['base_salary'] = $bankDetails['base_salary'] !== '' ? $bankDetails['base_salary'] : null;
-            
         }
 
         unset($this->data['bank_details']);

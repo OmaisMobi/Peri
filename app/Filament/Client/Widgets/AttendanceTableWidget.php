@@ -65,7 +65,7 @@ class AttendanceTableWidget extends BaseWidget
     {
         $user = Auth::user();
 
-        if (($user->hasRole('Admin') || Helper::isAssignUsers()) && $user) {
+        if (($user->hasRole('Admin') || Helper::isAssignUsers()) && $user && Helper::has_feature('attendance')) {
             return true;
         }
 

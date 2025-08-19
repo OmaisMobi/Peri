@@ -2,6 +2,7 @@
 
 namespace App\Filament\Client\Pages;
 
+use App\Facades\Helper;
 use App\Models\AttendancePolicy; // Replace with your new model
 use Filament\Pages\Page;
 use Filament\Forms;
@@ -314,5 +315,9 @@ class Policy extends Page implements HasKnowledgeBase
             ->title('Policies updated successfully.')
             ->success()
             ->send();
+    }
+    public static function canAccess(): bool
+    {
+        return Auth::check() && Auth::user()->hasRole('Admin') && Helper::has_feature('attendance');
     }
 }

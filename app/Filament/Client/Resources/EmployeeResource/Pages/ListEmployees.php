@@ -3,6 +3,7 @@
 namespace App\Filament\Client\Resources\EmployeeResource\Pages;
 
 use App\Facades\Email;
+use App\Facades\Helper;
 use App\Filament\Client\Resources\EmployeeResource;
 use App\Models\Invitation;
 use App\Models\Subscription;
@@ -83,12 +84,12 @@ class ListEmployees extends ListRecords
                         ->modalButton('Send Invite')
                         ->modalWidth('md'),
                 ]
-            )->label('Create Pay Run')
+            )   
+                ->visible(fn() => Helper::is_module_allowed('employees'))      
                 ->label('Add')
                 ->icon('heroicon-o-plus')
                 ->color('primary')
                 ->button(),
-
         ];
     }
 }

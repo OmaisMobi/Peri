@@ -388,7 +388,8 @@ class EditPayroll extends Page
                                     ->prefix(fn($state) => $currency . ' ')
                                     ->formatStateUsing(fn($state) => round($state)),
 
-                                Forms\Components\Toggle::make('apply_overtime_earnings')->label('Apply'),
+                                Forms\Components\Toggle::make('apply_overtime_earnings')->label('Apply')->inline(false)->onColor('success')
+                                    ->offColor('danger'),
 
                                 Forms\Components\TextInput::make('late_deduction_amount')
                                     ->label('Late Minutes Deduction')
@@ -397,7 +398,8 @@ class EditPayroll extends Page
                                     ->prefix(fn($state) => $currency . ' ')
                                     ->formatStateUsing(fn($state) => round($state)),
 
-                                Forms\Components\Toggle::make('deduct_late_penalties')->label('Apply'),
+                                Forms\Components\Toggle::make('deduct_late_penalties')->label('Apply')->inline(false)->onColor('success')
+                                    ->offColor('danger'),
 
                                 Forms\Components\TextInput::make('absent_deduction_amount')
                                     ->label('Absent Days Deduction')
@@ -406,7 +408,8 @@ class EditPayroll extends Page
                                     ->prefix(fn($state) => $currency . ' ')
                                     ->formatStateUsing(fn($state) => round($state)),
 
-                                Forms\Components\Toggle::make('deduct_absent_penalties')->label('Apply'),
+                                Forms\Components\Toggle::make('deduct_absent_penalties')->label('Apply')->inline(false)->onColor('success')
+                                    ->offColor('danger'),
                             ])
                             ->columns(2)
                             ->columnSpan(2), // Takes 2 columns
