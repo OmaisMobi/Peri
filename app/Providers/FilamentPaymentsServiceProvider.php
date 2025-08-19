@@ -54,7 +54,6 @@ class FilamentPaymentsServiceProvider extends ServiceProvider
         });
         FilamentSubscriptions::afterSubscription(function ($data) {
             $team = Team::find($data['team_id']) ?? 'Unknown Team';
-            $team->planSubscription('main')->recordFeatureUsage('listings', 9, false);
             User::where('is_super_admin', true)->get()->each(function ($user) use ($team) {
                 Notification::make()
                     ->title('New Subscription')

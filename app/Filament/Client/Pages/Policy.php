@@ -38,7 +38,7 @@ class Policy extends Page implements HasKnowledgeBase
             return false;
         }
 
-        return $user->hasRole('Admin');
+        return $user->hasRole('Admin') && Helper::has_feature('attendance-policies');
     }
 
     public static function getDocumentation(): array
@@ -318,6 +318,6 @@ class Policy extends Page implements HasKnowledgeBase
     }
     public static function canAccess(): bool
     {
-        return Auth::check() && Auth::user()->hasRole('Admin') && Helper::has_feature('attendance');
+        return Auth::check() && Auth::user()->hasRole('Admin') && Helper::has_feature('attendance-policies');
     }
 }
