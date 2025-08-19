@@ -186,7 +186,7 @@ class RoleResource extends Resource implements HasKnowledgeBase
 
     public static function canCreate(): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin')) && Helper::has_feature('roles');
+        return Auth::check() && (Auth::user()->hasRole('Admin')) && Helper::is_module_allowed('roles');
     }
 
     public static function canEdit($record): bool

@@ -632,7 +632,7 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
             Auth::user()->can('employees.manage') || 
             Auth::user()->hasRole('CEO') || 
             Auth::user()->hasRole('AMS Manager')
-        ) && Helper::is_module_allowed('employees');
+        ) && Helper::has_feature('employees');
     }
 
     public static function canEdit($record): bool

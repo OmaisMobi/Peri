@@ -95,7 +95,7 @@ class ListEmployees extends ListRecords
                         ->modalWidth('md'),
                 ]
             )   
-                ->visible(fn() => Helper::is_module_allowed('employees'))      
+                ->visible(fn() => Helper::has_feature('employees'))      
                 ->label('Add')
                 ->icon('heroicon-o-plus')
                 ->color('primary')
