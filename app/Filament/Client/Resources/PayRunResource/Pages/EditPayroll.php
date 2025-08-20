@@ -386,31 +386,47 @@ class EditPayroll extends Page
                                     ->numeric()
                                     ->disabled()
                                     ->prefix(fn($state) => $currency . ' ')
+                                    ->visible(fn() => Helper::policy()->overtime_policy_enabled == 1)
                                     ->formatStateUsing(fn($state) => round($state)),
 
-                                Forms\Components\Toggle::make('apply_overtime_earnings')->label('Apply')->inline(false)->onColor('success')
-                                    ->offColor('danger'),
+                                Forms\Components\Toggle::make('apply_overtime_earnings')
+                                    ->label('Apply')
+                                    ->inline(false)
+                                    ->onColor('success')
+                                    ->offColor('danger')
+                                    ->visible(fn() => Helper::policy()->overtime_policy_enabled == 1),
 
                                 Forms\Components\TextInput::make('late_deduction_amount')
                                     ->label('Late Minutes Deduction')
                                     ->numeric()
                                     ->disabled()
                                     ->prefix(fn($state) => $currency . ' ')
-                                    ->formatStateUsing(fn($state) => round($state)),
+                                    ->visible(fn() => Helper::policy()->late_policy_enabled == 1)
+                                    ->formatStateUsing(fn($state) => round($state))
+                                    ->hintIcon('heroicon-m-question-mark-circle', tooltip: 'Only applies if the late minutes policy is enabled.'),
 
-                                Forms\Components\Toggle::make('deduct_late_penalties')->label('Apply')->inline(false)->onColor('success')
-                                    ->offColor('danger'),
+                                Forms\Components\Toggle::make('deduct_late_penalties')
+                                    ->label('Apply')
+                                    ->inline(false)
+                                    ->onColor('success')
+                                    ->offColor('danger')
+                                    ->visible(fn() => Helper::policy()->late_policy_enabled == 1),
 
                                 Forms\Components\TextInput::make('absent_deduction_amount')
                                     ->label('Absent Days Deduction')
                                     ->numeric()
                                     ->disabled()
                                     ->prefix(fn($state) => $currency . ' ')
-                                    ->formatStateUsing(fn($state) => round($state)),
+                                    ->formatStateUsing(fn($state) => round($state))
+                                    ->hintIcon('heroicon-m-question-mark-circle', tooltip: 'Only applies if the over time policy is enabled.'),
 
-                                Forms\Components\Toggle::make('deduct_absent_penalties')->label('Apply')->inline(false)->onColor('success')
+                                Forms\Components\Toggle::make('deduct_absent_penalties')
+                                    ->label('Apply')
+                                    ->inline(false)
+                                    ->onColor('success')
                                     ->offColor('danger'),
                             ])
+                            ->visible(fn() => Helper::has_feature('attendance'))
                             ->columns(2)
                             ->columnSpan(2), // Takes 2 columns
 

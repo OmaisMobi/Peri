@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Facades\Helper;
 use App\Models\User;
 use App\Models\Payroll;
 use App\Models\TaxSlabs;
@@ -94,7 +95,18 @@ class PayrollCalculationService
         );
         $perDayRate = $financialRates['per_day_rate'];
         $perMinuteRate = $financialRates['per_minute_rate'];
-
+        if (!Helper::has_feature('attendance')) {
+            $configDeductLatePenalties = false;
+            $configDeductAbsentPenalties = false;
+            $configApplyOvertimeEarnings = false;
+        } else {
+            if (Helper::policy()->late_policy_enabled == 0) {
+                $configDeductLatePenalties = false;
+            }
+            if (Helper::policy()->overtime_policy_enabled == 0) {
+                $configApplyOvertimeEarnings = false;
+            }
+        }
         $attendanceFinancialImpacts = $this->calculateAttendanceFinancialImpacts(
             $attendanceSummary['total_late_minutes'],
             $attendanceSummary['absent_days_count'] + $attendanceSummary['unpaid_leave_days_count'],
@@ -1107,16 +1119,22 @@ class PayrollCalculationService
         $nonTaxableAttendancePenalties = 0.0;
 
         $overtimeAmount = round($attendanceFinancialImpacts['overtime_earning_amount'] ?? 0.0);
-        if ($applyOvertimeEarnings) {
+        if ($applyOvertimeEarnings && Helper::has_feature('attendance') && Helper::policy()->overtime_policy_enabled == 1) {
             $nonTaxableAttendanceEarnings += $overtimeAmount;
+        }else {
+            $overtimeAmount = 0.0; // Reset if not applying overtime earnings
         }
 
-        if ($deductLatePenalties) {
+        if ($deductLatePenalties && Helper::has_feature('attendance') && Helper::policy()->late_policy_enabled == 1) {
             $nonTaxableAttendancePenalties += $attendanceFinancialImpacts['late_deduction_amount'];
+        }else {
+            $attendanceFinancialImpacts['late_deduction_amount'] = 0.0;
         }
 
-        if ($deductAbsentPenalties) {
+        if ($deductAbsentPenalties && Helper::has_feature('attendance')) {
             $nonTaxableAttendancePenalties += $attendanceFinancialImpacts['absent_deduction_amount'];
+        }else {
+            $attendanceFinancialImpacts['absent_deduction_amount'] = 0.0;
         }
 
         $totalTaxableEarnings = $totalCustomTaxableEarnings + $totalAdHocTaxableEarnings + $taxableAttendanceEarnings;
