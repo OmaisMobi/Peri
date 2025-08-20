@@ -48,7 +48,7 @@
                         <a href="{{ url('/client/register') }}"
                             class="hero-btn px-5 py-3 font-semibold rounded
                                   transition-all duration-300 hover:bg-white">
-                            Get Started →
+                            {{ $freeplan->trial_period}} {{ ucfirst($freeplan->trial_interval) }} free trial →
                         </a>
                     </div>
                 </div>

@@ -591,7 +591,7 @@ class EmployeeResource extends Resource implements HasKnowledgeBase
                     ->placeholder('All Roles')
                     ->options(fn() => Filament::getTenant()->roles()->pluck('name', 'id')->toArray()),
             ])
-            ->defaultSort('created_at', 'desc')
+            ->defaultSort('id', 'asc')
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),

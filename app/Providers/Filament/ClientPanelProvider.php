@@ -45,6 +45,8 @@ use Guava\FilamentKnowledgeBase\KnowledgeBasePlugin;
 use \Filament\View\PanelsRenderHook;
 use Illuminate\Support\Facades\Route;
 use App\Filament\Client\Pages\Settings;
+use Filament\Facades\Filament;
+use Illuminate\Support\Facades\Blade;
 
 class ClientPanelProvider extends PanelProvider
 {
@@ -160,7 +162,7 @@ class ClientPanelProvider extends PanelProvider
             })
             ->databaseNotifications()
             ->tenant(Team::class, ownershipRelationship: 'team', slugAttribute: 'slug')
-            ->tenantRegistration(RegisterTeam::class)
+            // ->tenantRegistration(RegisterTeam::class)
             ->maxContentWidth(MaxWidth::Full)
             ->tenantProfile(EditTeamProfile::class, function () {
                 return Auth::user() && Auth::user()->hasRole('Admin');
@@ -188,6 +190,15 @@ class ClientPanelProvider extends PanelProvider
                 $roleBadgeView = View::make('filament.components.role-badge', compact('role'))->render();
 
                 return $subscriptionEndView . $roleBadgeView;
+            })
+            ->renderHook('panels::global-search.after', function () {
+                $team = Filament::getTenant();
+                $subscription = $team->activePlanSubscriptions()->first();
+                $plan = $subscription->plan;
+                if ($plan->isFree() && $subscription->trial_ends_at->isBetween(now(), now()->addDays(7))) {
+                    return Blade::render('@livewire(\'subscription-card\')');
+                }
+                return '';
             });
     }
 }
