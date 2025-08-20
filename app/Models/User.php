@@ -73,16 +73,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants, HasDefau
 
     public function getFilamentAvatarUrl(): ?string
     {
-        if (empty($this->avatar_url)) {
-            return null;
-        }
-
-        // Prepend 'storage/' only if it's not already included
-        $path = str_starts_with($this->avatar_url, 'storage/')
-            ? $this->avatar_url
-            : 'storage/' . ltrim($this->avatar_url, '/');
-
-        return asset($path);
+        return $this->avatar_url;
     }
 
     protected static function boot()
