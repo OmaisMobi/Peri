@@ -134,7 +134,7 @@ class UserEventsList extends Widget
                 if ($nextBirthday && $nextBirthday->between($now, $dateWindowEnd)) { // Only future birthdays in window
                     $processedEvents->push([
                         'name'          => $user->name,
-                        'avatar_url'    => asset('storage/'.$user->getFilamentAvatarUrl()),
+                        'avatar_url'    => $user->getFilamentAvatarUrl(),
                         'type'          => 'Birthday',
                         'date'          => $nextBirthday->format('M d'),
                         'original_date' => $nextBirthday,
@@ -151,7 +151,7 @@ class UserEventsList extends Widget
                     } else {
                         $processedEvents->push([
                             'name'          => $user->name,
-                            'avatar_url'    => asset('storage/'.$user->getFilamentAvatarUrl()),
+                            'avatar_url'    => $user->getFilamentAvatarUrl(),
                             'type'          => 'Work Anniversary',
                             'date'          => $nextAnniversary->format('M d'),
                             'original_date' => $nextAnniversary,
@@ -165,7 +165,7 @@ class UserEventsList extends Widget
                 if ($probationEndDate->between($dateWindowStart, $dateWindowEnd)) {
                     $processedEvents->push([
                         'name'          => $user->name,
-                        'avatar_url'    => asset('storage/'.$user->getFilamentAvatarUrl()),
+                        'avatar_url'    => $user->getFilamentAvatarUrl(),
                         'type'          => 'Probation End',
                         'date'          => $probationEndDate->format('M d'),
                         'original_date' => $probationEndDate,

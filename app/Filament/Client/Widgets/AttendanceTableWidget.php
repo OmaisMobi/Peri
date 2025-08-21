@@ -82,7 +82,7 @@ class AttendanceTableWidget extends BaseWidget
                     ->label('Avatar')
                     ->grow(false)
                     ->circular()
-                    ->url(fn($record) => asset('storage/'.$record->avatar_url)),
+                    ->url(fn($record) => $record->avatar_url),
                 Tables\Columns\TextColumn::make('name')->label('Employee')->searchable()->grow(false)->width('25%'),
                 Tables\Columns\TextColumn::make('department_name')->label('Department')->searchable()->grow(false)->width('25%'),
                 Tables\Columns\TextColumn::make('status')
