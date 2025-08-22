@@ -6,6 +6,7 @@ use App\Http\Middleware\VerifyBillableIsSubscribed;
 use App\Models\Team;
 use App\Models\Country;
 use App\Models\Permission;
+use App\Models\Plan;
 use App\Models\Role;
 use DateTimeZone;
 use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
@@ -52,7 +53,11 @@ class RegisterTeam extends RegisterTenant
 
                 TextInput::make('name')
                     ->label('Company Name')
-                    ->required(),
+                    ->required()
+                    ->unique(ignoreRecord: true) // when editing, ignore current record
+                    ->validationMessages([
+                        'unique' => 'This company name is already taken.',
+                    ]),
 
                 Select::make('country_id')
                     ->label('Country')
@@ -82,6 +87,8 @@ class RegisterTeam extends RegisterTenant
             'team_id' => $team->id,
             'is_default' => true,
         ]);
+        $this->subscribeFreeTrail($team);
+
         setPermissionsTeamId($team->id);
         $team->members()->attach(Auth::id());
         Auth::user()->assignRole($adminRole);
@@ -109,20 +116,26 @@ class RegisterTeam extends RegisterTenant
 
         $amsRole->givePermissionTo([
             'employees.manage',
-            'departments.manage',
-            'device.manage',
-            'leaveType.manage',
-            'attendancePolicies.manage',
-            'shifts.manage',
             'biometric.approve',
             'holiday.manage',
         ]);
 
         $payrollRole->givePermissionTo([
             'employees.manage',
-            'departments.manage',
             'payroll.approve',
             'payroll.manage'
         ]);
+    }
+    protected function subscribeFreeTrail(Team $tenant)
+    {
+        $plan = Plan::where('slug', 'free-trial')->first();
+        $tenant->newPlanSubscription($plan->slug, $plan);
+        $tenant->planSubscription($plan->slug)->recordFeatureUsage('funds', 0, false);
+        $tenant->planSubscription($plan->slug)->recordFeatureUsage('biometric-devices', 0, false);
+        $tenant->planSubscription($plan->slug)->recordFeatureUsage('shifts', 0, false);
+        $tenant->planSubscription($plan->slug)->recordFeatureUsage('employees', 0, false);
+        $tenant->planSubscription($plan->slug)->recordFeatureUsage('departments', 0, false);
+        $tenant->planSubscription($plan->slug)->recordFeatureUsage('roles', 0, false);
+        return true;
     }
 }

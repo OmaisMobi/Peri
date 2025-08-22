@@ -23,6 +23,6 @@ Homestead.yaml
 npm-debug.log
 Thumbs.db
 yarn-error.log
-/bootstrap/cache/*.php
+/bootstrap/cache/*
 vendor/*
 !vendor/guava

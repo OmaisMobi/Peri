@@ -2,6 +2,7 @@
 
 namespace App\Filament\Client\Resources;
 
+use App\Facades\Helper;
 use App\Filament\Client\Resources\HolidayResource\Pages;
 use App\Models\Holiday;
 use Filament\Facades\Filament;
@@ -30,7 +31,7 @@ class HolidayResource extends Resource implements HasKnowledgeBase
     public static function shouldRegisterNavigation(): bool
     {
         $user = Auth::user();
-        return $user->hasRole('Admin') || $user->attendance_config == 1 || $user->hasRole('CEO') || $user->hasRole('AMS Manager');
+        return ($user->hasRole('Admin') ||  Auth::user()->can('holiday.manage') || $user->hasRole('CEO') || $user->hasRole('AMS Manager'));
     }
 
     public static function getDocumentation(): array
@@ -224,7 +225,7 @@ class HolidayResource extends Resource implements HasKnowledgeBase
 
     public static function canViewAny(): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->can('holiday.view') || Auth::user()->can('holiday.manage'));
+        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->can('holiday.view') || Auth::user()->can('holiday.manage')) && Helper::has_feature('attendance');
     }
 
     public static function canCreate(): bool

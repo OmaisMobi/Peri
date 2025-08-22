@@ -2,6 +2,7 @@
 
 namespace App\Filament\Client\Resources;
 
+use App\Facades\Helper;
 use App\Filament\Client\Resources\FundsResource\Pages;
 use App\Models\Fund;
 use Filament\Resources\Resource;
@@ -200,7 +201,14 @@ class FundsResource extends Resource
             ->searchPlaceholder('Search Fund')
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->after(function () {
+                        $tenant = Filament::getTenant();
+                        $subscription = $tenant->activePlanSubscriptions()->first();
+                        if ($subscription) {
+                            $subscription->reduceFeatureUsage('funds');
+                        }
+                    }),
             ]);
     }
 
@@ -215,11 +223,12 @@ class FundsResource extends Resource
     public static function canViewAny(): bool
     {
         return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->hasRole('Payroll Manager') ||
-            Auth::user()->can('payroll.manage'));
+            Auth::user()->can('payroll.manage')) && Helper::has_feature('payroll');
     }
 
     public static function canCreate(): bool
     {
-        return !Filament::getTenant()->payruns()->whereIn('status', ['draft', 'pending_approval', 'rejected'])->exists();
+        return !Filament::getTenant()->payruns()->whereIn('status', ['draft', 'pending_approval', 'rejected'])->exists()
+            && Helper::is_module_allowed('funds');
     }
 }

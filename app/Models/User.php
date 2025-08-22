@@ -73,31 +73,11 @@ class User extends Authenticatable implements FilamentUser, HasTenants, HasDefau
 
     public function getFilamentAvatarUrl(): ?string
     {
-        if (empty($this->avatar_url)) {
-            return null;
+        if(empty($this->avatar_url))
+        {
+            $this->avatar_url = 'profile-images/avatar-male.jpg';
         }
-
-        // Prepend 'storage/' only if it's not already included
-        $path = str_starts_with($this->avatar_url, 'storage/')
-            ? $this->avatar_url
-            : 'storage/' . ltrim($this->avatar_url, '/');
-
-        return asset($path);
-    }
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($user) {
-            if (empty($user->avatar_url)) {
-                if ($user->gender === 'Female') {
-                    $user->avatar_url = 'profile-images/female.jpg';
-                } else {
-                    $user->avatar_url = 'profile-images/male.jpg';
-                }
-            }
-        });
+        return asset('storage/'.$this->avatar_url);
     }
 
     public function scopeVisibleToCurrentUser($query)

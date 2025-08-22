@@ -8,6 +8,7 @@ use App\Filament\Client\Resources\BiometricResource\RelationManagers;
 use App\Models\Biometric;
 use App\Models\User;
 use Carbon\Carbon;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
@@ -35,7 +36,7 @@ class BiometricResource extends Resource implements HasKnowledgeBase
     public static function shouldRegisterNavigation(): bool
     {
         $user = Auth::user();
-        return $user->hasRole('Admin') || $user->attendance_config == 1 || $user->hasRole('CEO') || $user->hasRole('AMS Manager');
+        return ($user->hasRole('Admin') || $user->attendance_config == 1 || $user->hasRole('CEO') || $user->hasRole('AMS Manager'));
     }
 
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
@@ -195,7 +196,7 @@ class BiometricResource extends Resource implements HasKnowledgeBase
 
     public static function canViewAny(): bool
     {
-        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->can('biometric.view') || Auth::user()->can('biometric.createRequest'));
+        return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->can('biometric.view') || Auth::user()->can('biometric.createRequest')) && Helper::has_feature('attendance');
     }
 
     public static function canCreate(): bool

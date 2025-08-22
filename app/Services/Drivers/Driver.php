@@ -214,7 +214,13 @@ abstract class Driver
         }
         if ($eventClass === \App\Events\SubscribePlan::class) {
             $tenant->newPlanSubscription($plan->slug, $plan);
-            Event::dispatch(new $eventClass([    // event App\Events\SubscribePlan
+            $tenant->planSubscription($plan->slug)->recordFeatureUsage('funds', 0, false);
+            $tenant->planSubscription($plan->slug)->recordFeatureUsage('biometric-devices', 0, false);
+            $tenant->planSubscription($plan->slug)->recordFeatureUsage('shifts', 0, false);
+            $tenant->planSubscription($plan->slug)->recordFeatureUsage('employees', 0, false);
+            $tenant->planSubscription($plan->slug)->recordFeatureUsage('departments', 0, false);
+            $tenant->planSubscription($plan->slug)->recordFeatureUsage('roles', 0, false);
+            Event::dispatch(new $eventClass([
                 "old" => null,
                 "new" => $plan,
                 "subscription" => $tenant->planSubscriptions()->first(),

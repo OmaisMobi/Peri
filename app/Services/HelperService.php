@@ -1461,4 +1461,58 @@ class HelperService
             'endsAt' => $endsAt,
         ];
     }
+    /**
+     * Check if a module is allowed for the current tenant.
+     *
+     * @param string $slug
+     * @return bool
+     */
+    public function is_module_allowed($slug): bool
+    {
+        $tenant = Filament::getTenant();
+        if (!$tenant) {
+            return false;
+        }
+        $subscription = $tenant->activePlanSubscriptions()->first();
+        if ($subscription) {
+            return $subscription->canUseFeature($slug);
+        }
+        return false;
+    }
+    /**
+     * Check if a module is allowed for the current tenant.
+     *
+     * @param string $slug
+     * @return bool
+     */
+    public function has_feature($slug): bool
+    {
+        $tenant = Filament::getTenant();
+        if (!$tenant) {
+            return false;
+        }
+        $subscription = $tenant->activePlanSubscriptions()->first();
+        if ($subscription) {
+            return $subscription->hasFeature($slug);
+        }
+        return false;
+    }
+    /**
+     * Record feature usage for the current tenant.
+     *
+     * @param string $slug
+     * @return bool
+     */
+    public function record_feature_usage($slug)
+    {
+        $tenant = Filament::getTenant();
+        if (!$tenant) {
+            return false;
+        }
+        $subscription = $tenant->activePlanSubscriptions()->first();
+        if ($subscription) {
+            return $subscription->recordFeatureUsage($slug, 1);
+        }
+        return false;
+    }
 }

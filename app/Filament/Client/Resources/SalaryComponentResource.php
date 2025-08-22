@@ -2,6 +2,7 @@
 
 namespace App\Filament\Client\Resources;
 
+use App\Facades\Helper;
 use App\Filament\Client\Resources\SalaryComponentResource\Pages;
 use App\Models\SalaryComponent;
 use App\Models\TaxSlabs;
@@ -267,7 +268,7 @@ class SalaryComponentResource extends Resource implements HasKnowledgeBase
     public static function canViewAny(): bool
     {
         return Auth::check() && (Auth::user()->hasRole('Admin') || Auth::user()->hasRole('Payroll Manager') ||
-            Auth::user()->can('payroll.manage'));
+            Auth::user()->can('payroll.manage')) && Helper::has_feature('payroll');
     }
 
     public static function canCreate(): bool

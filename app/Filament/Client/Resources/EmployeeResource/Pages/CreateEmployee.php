@@ -18,18 +18,6 @@ class CreateEmployee extends CreateRecord
     protected function afterCreate(): void
     {
         $roles = [];
-        // if (isset($this->data['role'])) {
-        //     $roles[] = Role::find($this->data['role']);
-        // }
-
-        // $allEmployeesRole = Role::where('assignment', 'all')
-        //     ->where('team_id', Filament::getTenant()->id)
-        //     ->first();
-
-        // if ($allEmployeesRole) {
-        //     $roles[] = $allEmployeesRole;
-        // }
-
         // Filter out nulls and get unique roles
         $uniqueRoles = collect($roles)->filter()->unique('id');
 
@@ -93,6 +81,7 @@ class CreateEmployee extends CreateRecord
             $role->assigned_users = $assignedUsers;
             $role->save();
         }
+        \App\Facades\Helper::record_feature_usage('employees');
     }
 
 

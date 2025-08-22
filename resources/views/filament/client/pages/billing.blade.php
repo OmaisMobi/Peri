@@ -35,7 +35,8 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 @forelse ($plans as $plan)
-                    <x-filament::section
+                    @if (!$plan->isFree())
+                        <x-filament::section
                         class="billing-plan-section {{ $currentPlan && $currentPlan->id === $plan->id ? 'ring-2 ring-primary-500' : '' }}">
                         <x-slot name="heading">
                             <h4 class="text-xl font-semibold">{{ $plan->name }}</h4>
@@ -94,6 +95,7 @@
                             </x-filament::button>
                         </div>
                     </x-filament::section>
+                    @endif
                 @empty
                     <div class="col-span-full">
                         <x-filament::card class="text-center py-8">
